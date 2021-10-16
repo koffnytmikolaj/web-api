@@ -1,10 +1,11 @@
+USE CRM_DB;
 
 -- Dropping tables if they exist
 IF OBJECT_ID(N'dbo.ContactPersons', N'U') IS NOT NULL  
    DROP TABLE [dbo].ContactPersons;
 
-IF OBJECT_ID(N'dbo.TradeNodes', N'U') IS NOT NULL  
-   DROP TABLE [dbo].TradeNodes;
+IF OBJECT_ID(N'dbo.TradeNotes', N'U') IS NOT NULL  
+   DROP TABLE [dbo].TradeNotes;
 
 IF OBJECT_ID(N'dbo.Companies', N'U') IS NOT NULL  
    DROP TABLE [dbo].Companies;
@@ -22,21 +23,21 @@ IF OBJECT_ID(N'dbo.Roles', N'U') IS NOT NULL
 -- Creating tables
 CREATE TABLE dbo.Roles
 (
-	id			INT			PRIMARY KEY,
+	id			INT			PRIMARY KEY	IDENTITY(1,1),
 	roleName	VARCHAR(32)	UNIQUE
 );
 
 CREATE TABLE dbo.Users
 (
-	id			INT				PRIMARY KEY	IDENTITY(1,1),
-	name		VARCHAR(32)		NOT NULL,
-	surname		VARCHAR(32)		NOT NULL,
-	dateOfBirth	DATETIME		NOT NULL,
-	login		VARCHAR(32)		NOT NULL	UNIQUE,
-	password	VARCHAR(256)	NOT NULL,
-	role		INT				NOT NULL,
-	isDeleted	BIT				NOT NULL,
-	CONSTRAINT FK_Users_Roles FOREIGN KEY(role) REFERENCES dbo.Roles(id)
+	Id			INT				PRIMARY KEY	IDENTITY(1,1),
+	Name		VARCHAR(32)		NOT NULL,
+	Surname		VARCHAR(32)		NOT NULL,
+	DateOfBirth	DATETIME		NOT NULL,
+	Login		VARCHAR(32)		NOT NULL	UNIQUE,
+	Password	VARCHAR(256)	NOT NULL,
+	Role		INT				NOT NULL,
+	IsDeleted	BIT				NOT NULL,
+	CONSTRAINT FK_Users_Roles FOREIGN KEY(Role) REFERENCES dbo.Roles(id)
 );
 
 CREATE TABLE dbo.Industries
@@ -60,7 +61,7 @@ CREATE TABLE dbo.Companies
 	CONSTRAINT FK_Companies_Industries FOREIGN KEY(industry) REFERENCES dbo.Industries(id)
 );
 
-CREATE TABLE dbo.TradeNodes
+CREATE TABLE dbo.TradeNotes
 (
 	id				INT				PRIMARY KEY	IDENTITY(1,1),
 	noteContent		VARCHAR(512)	NOT NULL,
@@ -88,6 +89,7 @@ CREATE TABLE dbo.ContactPersons
 
 
 -- Creating indexes
+/*
 CREATE INDEX IX_Companies_Industry
 	ON dbo.Companies(industry);
 
@@ -96,13 +98,23 @@ CREATE INDEX IX_Companies_DateOfAdd
 
 CREATE INDEX IX_ContactPersons_Surname
 	ON dbo.ContactPersons(surname);
+*/
 
 
 -- Filling tables
 INSERT INTO dbo.Roles VALUES
-(1, 'user'),
-(2, 'admin'),
-(3, 'moderator');
+('user'),
+('admin'),
+('moderator');
+
+INSERT INTO dbo.Users VALUES
+('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, 0),
+('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', 1, 0),
+('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', 1, 1)
+
 
 SELECT *
 FROM dbo.Roles;
+
+SELECT *
+FROM dbo.Users;
