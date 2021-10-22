@@ -12,14 +12,16 @@ using WebAPI.Services;
 
 namespace WebAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly string sqlDataSource;
         public UserController(IConfiguration configuration)
         {
             _configuration = configuration;
+            sqlDataSource = _configuration.GetConnectionString("CrmAppCon");
         }
 
         [HttpGet]
@@ -27,9 +29,20 @@ namespace WebAPI.Controllers
         {
             string query =  "SELECT id, name, surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role, isDeleted " +
                             "FROM dbo.Users";
-            string sqlDataSource = _configuration.GetConnectionString("CrmAppCon");
+            
             DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult(table);
+        }
+
+        [HttpPost]
+        public JsonResult Post(User user)
+        {
+            string query =  "INSERT INTO dbo.Users VALUES " +
+                            "('" + user.name + "', '" + user.surname + "', '" + DateService.TransformDateToString(user.dateOfBirth) + 
+                                "', '" + user.login + "', '" + user.password + "', DEFAULT, DEFAULT)";
+
+            SqlService.ExecuteSqlTable(sqlDataSource, query);
+            return new JsonResult("Successfully added user!");
         }
     }
 }
