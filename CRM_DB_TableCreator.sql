@@ -24,20 +24,20 @@ IF OBJECT_ID(N'dbo.Roles', N'U') IS NOT NULL
 CREATE TABLE dbo.Roles
 (
 	id			INT			PRIMARY KEY	IDENTITY(1,1),
-	roleName	VARCHAR(32)	UNIQUE
+	roleName	VARCHAR(32)	UNIQUE		NOT NULL
 );
 
 CREATE TABLE dbo.Users
 (
-	Id			INT				PRIMARY KEY	IDENTITY(1,1),
-	Name		VARCHAR(32)		NOT NULL,
-	Surname		VARCHAR(32)		NOT NULL,
-	DateOfBirth	DATETIME		NOT NULL,
-	Login		VARCHAR(32)		NOT NULL	UNIQUE,
-	Password	VARCHAR(256)	NOT NULL,
-	Role		INT				NOT NULL,
-	IsDeleted	BIT				NOT NULL,
-	CONSTRAINT FK_Users_Roles FOREIGN KEY(Role) REFERENCES dbo.Roles(id)
+	id			INT				PRIMARY KEY	IDENTITY(1,1),
+	name		VARCHAR(32)		NOT NULL,
+	surname		VARCHAR(32)		NOT NULL,
+	dateOfBirth	DATETIME		NOT NULL,
+	login		VARCHAR(32)		NOT NULL	UNIQUE,
+	password	VARCHAR(256)	NOT NULL,
+	role		INT				NOT NULL	DEFAULT 1,
+	isDeleted	BIT				NOT NULL	DEFAULT 0,
+	CONSTRAINT FK_Users_Roles FOREIGN KEY(role) REFERENCES dbo.Roles(id)
 );
 
 CREATE TABLE dbo.Industries
@@ -89,7 +89,7 @@ CREATE TABLE dbo.ContactPersons
 
 
 -- Creating indexes
-/*
+
 CREATE INDEX IX_Companies_Industry
 	ON dbo.Companies(industry);
 
@@ -98,7 +98,7 @@ CREATE INDEX IX_Companies_DateOfAdd
 
 CREATE INDEX IX_ContactPersons_Surname
 	ON dbo.ContactPersons(surname);
-*/
+
 
 
 -- Filling tables
@@ -108,9 +108,9 @@ INSERT INTO dbo.Roles VALUES
 ('moderator');
 
 INSERT INTO dbo.Users VALUES
-('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, 0),
-('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', 1, 0),
-('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', 1, 1)
+('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, DEFAULT),
+('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', DEFAULT, DEFAULT),
+('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', DEFAULT, 1)
 
 
 SELECT *
