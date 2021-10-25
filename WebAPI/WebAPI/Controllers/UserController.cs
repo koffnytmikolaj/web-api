@@ -24,12 +24,41 @@ namespace WebAPI.Controllers
             sqlDataSource = _configuration.GetConnectionString("CrmAppCon");
         }
 
+        [Route("GetAllUsers")]
         [HttpGet]
         public JsonResult Get()
         {
-            string query =  "SELECT id, name, surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role, isDeleted " +
-                            "FROM dbo.Users";
+            string query = "SELECT u.id AS 'id', u.name AS 'name', surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role AS 'roleId', isDeleted, roleName AS 'roleName' " +
+                            "FROM dbo.Users AS u " +
+                                "JOIN dbo.Roles AS r " +
+                                    "ON r.id = u.role";
             
+            DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
+            return new JsonResult(table);
+        }
+
+        [Route("GetOnlyAvailableUsers")]
+        [HttpGet]
+        public JsonResult GetOnlyAvailableUsers()
+        {
+            string query = "SELECT u.id AS 'id', u.name AS 'name', surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role AS 'roleId', isDeleted, roleName AS 'roleName' " +
+                            "FROM dbo.Users AS u " +
+                                "JOIN dbo.Roles AS r " +
+                                    "ON r.id = u.role " +
+                            "WHERE isDeleted=0";
+
+            DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
+            return new JsonResult(table);
+        }
+
+        [Route("GetUserWithIdenticalLogin")]
+        [HttpGet]
+        public JsonResult GetUserWithIdenticalLogin(User user)
+        {
+            string query =  "SELECT id " +
+                            "FROM dbo.Users " +
+                            "WHERE login LIKE '" + user.login + "'";
+
             DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult(table);
         }
@@ -43,6 +72,18 @@ namespace WebAPI.Controllers
 
             SqlService.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult("Successfully added user!");
+        }
+
+        [Route("DeleteUser")]
+        [HttpPut]
+        public JsonResult DeleteUser(User user)
+        {
+            string query =  "ALTER TABLE dbo.Users " +
+                            "SET isDeleted=1 " +
+                            "WHERE id=" + user.id;
+
+            SqlService.ExecuteSqlTable(sqlDataSource, query);
+            return new JsonResult("Successfully deleted user!");
         }
     }
 }
