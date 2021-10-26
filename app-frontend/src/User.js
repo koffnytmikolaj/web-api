@@ -1,7 +1,8 @@
 import React, {Component} from "react";
-import { Table, Button, ButtonToolbar } from "react-bootstrap";
+import { Table, Button, ButtonToolbar, ButtonGroup } from "react-bootstrap";
 
 import { AddUserModal } from "./AddUserModal";
+import { EditUserModal } from "./EditUserModal";
 
 export class User extends Component {
     
@@ -10,13 +11,18 @@ export class User extends Component {
         super(props);
         this.state = {
             userList: [],
-            addModalShow: false
+            addModalShow: false,
+            updateModalShow: false
         }
     }
 
     connected = true;
-    showAll = true;
-    fetchPath = process.env.REACT_APP_API + 'user/GetAllUsers';
+    showAll = false;
+    availableUsersPath = process.env.REACT_APP_API + 'user/GetOnlyAvailableUsers';
+    allUsersPath = process.env.REACT_APP_API + 'user/GetAllUsers';
+    deletePath = process.env.REACT_APP_API + 'user/DeleteUser';
+    restorePath = process.env.REACT_APP_API + 'user/RestoreUser';
+    fetchPath = this.availableUsersPath;
 
     refreshList() {
 
@@ -45,10 +51,88 @@ export class User extends Component {
             this.refreshList();
     }
 
+    delete_RestoreUser(user) {
 
+        let path = user.isDeleted ? this.restorePath : this.deletePath;
+        if(window.confirm("Are You sure, You want to " + (user.isDeleted ? "restore" : "delete") + " this user?")) {
+            fetch(path, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: user.id
+                })
+            }, (error) => {
+                alert("Failed!\n" + error);
+            });
+        }
+    }
+
+
+    renderEditButton(user) {
+
+        return(
+            <Button className="m-2" variant="info" disabled={user.isDeleted} onClick={()=> 
+                this.setState({
+                        updateModalShow:    true,
+                        id:                 user.id,
+                        name:               user.name,
+                        surname:            user.surname,
+                        dateOfBirth:        user.dateOfBirth.substr(0,10),
+                        login:              user.login,
+                        role:               user.role
+                    }
+                )
+            }>
+                Edit
+            </Button>
+        );
+    }
+
+    renderEditUserModal() {
+
+        let {id, name, surname, dateOfBirth, login, role} = this.state;
+
+        return(
+            <EditUserModal 
+                show={this.state.updateModalShow}
+                onHide={()=> this.setState({updateModalShow: false})}
+                id={id}
+                name={name}
+                surname={surname}
+                date_of_birth={dateOfBirth}
+                login={login}
+                role={role}
+            />
+        );
+    }
+
+    renderDelete_RestoreButton(user) {
+
+        let actionName = user.isDeleted ? 'Restore' : 'Delete';
+        let actionVariant = user.isDeleted ? 'success' : 'danger';
+
+        return(
+            <Button className="m-2" variant={actionVariant} onClick={()=> this.delete_RestoreUser(user)}>
+                {actionName}
+            </Button>
+        );
+    }
+   
+    renderEditionElements(user) {
+
+        return(
+            <ButtonGroup>
+                {this.renderEditButton(user)}
+                {this.renderEditUserModal()}
+                {this.renderDelete_RestoreButton(user)}
+            </ButtonGroup>
+        );
+    }
+    
     renderTableRow(user) {
-
-        let actionName = user.isDeleted ? 'restore' : 'delete';
 
         return(
             <tr key={user.id}>
@@ -57,7 +141,7 @@ export class User extends Component {
                 <td>{user.dateOfBirth}</td>
                 <td>{user.login}</td>
                 <td>{user.roleName}</td>
-                <td>edit / {actionName}</td>
+                <td>{this.renderEditionElements(user)}</td>
             </tr>
         );
     }
@@ -72,7 +156,7 @@ export class User extends Component {
                     <th>Date of Birth</th>
                     <th>Login</th>
                     <th>Role</th>
-                    <th>Edit</th>
+                    <th>Edition</th>
                 </tr>
             </thead>
         );
@@ -102,7 +186,7 @@ export class User extends Component {
     renderShowUsersButton() {
 
         let buttonName = this.showAll ? 'Show available users' : 'Show all users';
-        let clickPath = process.env.REACT_APP_API + (this.showAll ? 'user/GetOnlyAvailableUsers' : 'user/GetAllUsers');
+        let clickPath = this.showAll ? this.availableUsersPath : this.allUsersPath;
         
         return(
             <Button
@@ -131,6 +215,8 @@ export class User extends Component {
         return (<AddUserModal show={this.state.addModalShow} onHide={()=> this.setState({addModalShow: false})}/>);
     }
 
+
+
     renderButtonToolbar() {
 
         return(
@@ -154,7 +240,7 @@ export class User extends Component {
         else
             return(
                 <div>
-                    Connect with the database first.
+                    Database failure! Come back later.
                 </div>
             );
     }

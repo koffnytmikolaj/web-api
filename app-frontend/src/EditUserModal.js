@@ -1,30 +1,66 @@
 import React, {Component} from "react";
 import { Modal, Button, Row, Col, Form } from "react-bootstrap";
 
-export class AddUserModal extends Component {
+export class EditUserModal extends Component {
 
     constructor(props) {
 
         super(props);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.state = {
+            roleValue: 1,
+            roleList: []
+        }
     }
     
-    fetchPath = process.env.REACT_APP_API + 'user/AddNewUser';
     connected = true;
+    fetchPath = process.env.REACT_APP_API + 'user/EditUser';
+    rolePath = process.env.REACT_APP_API + 'role/GetRoles';
+
+    getRoles() {
+
+        fetch(this.rolePath).then(response => 
+            response.json(),
+                (error) => {
+                    if(error) {
+                        this.connected = false;
+                        alert("Failed!\n" + error);
+                    }
+                    else
+                        this.connected = true;
+                }
+            ).then(data => {
+                this.setState({roleList:data});
+            }
+        );
+    }
+
+    componentDidMount() {
+        this.getRoles();
+    }
+
+
+    handleChange(event) {
+
+        this.setState({roleValue: event.target.value});
+    }
 
     sendQueryToDatabase(user) {
+
         fetch(this.fetchPath, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                id:             this.props.id,
                 name:           user.name.value,
                 surname:        user.surname.value,
                 dateOfBirth:    user.dateOfBirth.value,
                 login:          user.login.value,
-                password:       user.password.value
+                role:           user.role.value
             })
         }, (error) => {
             if(error) {
@@ -34,6 +70,7 @@ export class AddUserModal extends Component {
             else
                 this.connected = true;
         });
+        
     }
 
     handleSubmit(event) {
@@ -48,43 +85,56 @@ export class AddUserModal extends Component {
 
         return(
             <Button variant="primary" type="submit">
-                Add User
+                Edit User
             </Button>
         );
     }
     
+    renderNextRole(role) {
+
+        return(
+            <option value={role.id} key={role.id}>{role.roleName}</option>
+        );
+    }
+
+    renderRolesInTag() {
+
+        let roleList = this.state.roleList;
+
+        return(
+            roleList.map(role => this.renderNextRole(role))
+        );
+    }
+
     renderForm() {
 
         return(
             <Form onSubmit={this.handleSubmit}>
                 <Form.Group controlId="name">
                     <Form.Label>First Name</Form.Label>
-                    <Form.Control type="text" name="name" required placeholder="First Name"></Form.Control>
+                    <Form.Control type="text" name="name" required placeholder="First Name" defaultValue={this.props.name}></Form.Control>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="surname">
                     <Form.Label>Family Name</Form.Label>
-                    <Form.Control type="text" name="surname" required placeholder="Family Name"></Form.Control>
+                    <Form.Control type="text" name="surname" required placeholder="Family Name" defaultValue={this.props.surname}></Form.Control>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="dateOfBirth">
                     <Form.Label>Date Of Birth</Form.Label>
-                    <Form.Control type="date" name="dateOfBirth" required placeholder="Date Of Birth"></Form.Control>
+                    <Form.Control type="date" name="dateOfBirth" required placeholder="Date Of Birth" defaultValue={this.props.date_of_birth}></Form.Control>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="login">
                     <Form.Label>Login</Form.Label>
-                    <Form.Control type="text" name="login" required placeholder="Login"></Form.Control>
+                    <Form.Control type="text" name="login" required placeholder="Login" defaultValue={this.props.login}></Form.Control>
                 </Form.Group>
                 <br/>
-                <Form.Group controlId="password">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" name="password" required placeholder="Password"></Form.Control>
-                </Form.Group>
-                <br/>
-                <Form.Group controlId="passwordRepeat">
-                    <Form.Label>Repeat Password</Form.Label>
-                    <Form.Control type="password" name="passwordRepeat" required placeholder="Repeat Password"></Form.Control>
+                <Form.Group controlId="role">
+                    <Form.Label>Role</Form.Label>
+                    <Form.Control as="select" value={this.state.roleValue} onChange={this.handleChange} name="role">
+                        {this.renderRolesInTag()}
+                    </Form.Control>
                 </Form.Group>
                 <br/>
                 <Form.Group>
@@ -126,7 +176,7 @@ export class AddUserModal extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Add User
+                        Edit User
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
