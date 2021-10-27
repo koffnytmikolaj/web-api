@@ -14,6 +14,7 @@ export class EditUserModal extends Component {
         }
     }
     
+    change = true;
     connected = true;
     fetchPath = process.env.REACT_APP_API + 'user/EditUser';
     rolePath = process.env.REACT_APP_API + 'role/GetRoles';
@@ -36,8 +37,23 @@ export class EditUserModal extends Component {
         );
     }
 
+    attachRole() {
+
+        if(this.change) {
+            this.change = false;
+            this.setState({roleValue: this.props.role});
+        }
+    }
+
     componentDidMount() {
+
         this.getRoles();
+    }
+
+    componentDidUpdate() {
+
+        if(this.props.show)
+            this.attachRole();
     }
 
 

@@ -82,7 +82,7 @@ export class User extends Component {
                         surname:            user.surname,
                         dateOfBirth:        user.dateOfBirth.substr(0,10),
                         login:              user.login,
-                        role:               user.role
+                        role:               user.roleId
                     }
                 )
             }>
