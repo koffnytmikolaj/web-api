@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Data;
 using WebAPI.Models;
 using WebAPI.Services;
@@ -63,7 +65,7 @@ namespace WebAPI.Controllers
         {
             string query =  "SELECT id " +
                             "FROM dbo.Users " +
-                            "WHERE login LIKE '" + user.login + "'";
+                            "WHERE login LIKE '" + user.Login + "'";
 
             return GetQuery(query);
         }
@@ -72,9 +74,13 @@ namespace WebAPI.Controllers
         [HttpPost]
         public JsonResult AddNewUser(User user)
         {
+            Dictionary<string, bool> correctDataArray = UserVerificationService.VerifyUser(user, sqlDataSource);
+            if (!UserVerificationService.VerifyTable(correctDataArray))
+                return new JsonResult(JsonConvert.SerializeObject(correctDataArray, Formatting.Indented));
+
             string query =  "INSERT INTO dbo.Users VALUES " +
-                            "('" + user.name + "', '" + user.surname + "', '" + DateService.TransformDateToString(user.dateOfBirth) + 
-                                "', '" + user.login + "', '" + user.password + "', DEFAULT, DEFAULT)";
+                            "('" + user.Name + "', '" + user.Surname + "', '" + DateService.TransformDateToString(user.DateOfBirth) + 
+                                "', '" + user.Login + "', '" + user.Password + "', DEFAULT, DEFAULT)";
 
             return ChangeDatabase(query, "Successfully added user!");
             
@@ -86,7 +92,7 @@ namespace WebAPI.Controllers
         {
             string query =  "UPDATE dbo.Users " +
                             "SET isDeleted = 1 " +
-                            "WHERE id = " + user.id;
+                            "WHERE id = " + user.Id;
 
             return ChangeDatabase(query, "Successfully deleted user!");
         }
@@ -97,7 +103,7 @@ namespace WebAPI.Controllers
         {
             string query = "UPDATE dbo.Users " +
                             "SET isDeleted = 0 " +
-                            "WHERE id = " + user.id;
+                            "WHERE id = " + user.Id;
 
             return ChangeDatabase(query, "Successfully restored user!");
         }
@@ -107,12 +113,12 @@ namespace WebAPI.Controllers
         public JsonResult EditUser(User user)
         {
             string query =  "UPDATE dbo.Users " +
-                            "SET name = '" + user.name + "', " +
-                                "surname = '" + user.surname + "', " +
-                                "dateOfBirth = '" + DateService.TransformDateToString(user.dateOfBirth) + "', " +
-                                "login = '" + user.login + "', " +
-                                "role = " + user.role + " " +
-                            "WHERE id = " + user.id;
+                            "SET name = '" + user.Name + "', " +
+                                "surname = '" + user.Surname + "', " +
+                                "dateOfBirth = '" + DateService.TransformDateToString(user.DateOfBirth) + "', " +
+                                "login = '" + user.Login + "', " +
+                                "role = " + user.Role + " " +
+                            "WHERE id = " + user.Id;
 
             return ChangeDatabase(query, "Successfully edited user!");
         }

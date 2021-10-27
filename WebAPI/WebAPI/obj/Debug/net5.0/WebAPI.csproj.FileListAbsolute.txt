@@ -37,3 +37,7 @@ D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\runtimes\win-x64\nati
 D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\runtimes\win-x86\native\sni.dll
 D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
 D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
+D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\Microsoft.Bcl.AsyncInterfaces.dll
+D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\Microsoft.Bcl.HashCode.dll
+D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\Microsoft.EntityFrameworkCore.dll
+D:\react\ReactSchoolProject\WebAPI\WebAPI\bin\Debug\net5.0\Microsoft.EntityFrameworkCore.Abstractions.dll

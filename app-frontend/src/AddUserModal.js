@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import { Modal, Button, Row, Col, Form } from "react-bootstrap";
+import { Modal, Button, Row, Col, Form, FloatingLabel, Alert } from "react-bootstrap";
 
 export class AddUserModal extends Component {
 
@@ -7,12 +7,50 @@ export class AddUserModal extends Component {
 
         super(props);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.state = {
+            errorObject: ["", "", "", "", "", ""]
+        }
     }
     
     fetchPath = process.env.REACT_APP_API + 'user/AddNewUser';
-    connected = true;
+    errorObjectSet = false;
+    
+    setErrorObject(result) {
 
+        console.log("result " + result);
+        let resultObject = JSON.parse(result);
+        let messageArray = [];
+
+        console.log("object " + resultObject);
+
+        //First name
+        messageArray.push(resultObject["name"]           ? "" : "Type correct name!");
+        console.log(messageArray);
+        //Family name
+        messageArray.push(resultObject["surname"]        ? "" : "Type correct surname!");
+        console.log(messageArray);
+        //Date of birth
+        messageArray.push(resultObject["date"]           ? "" : "Type correct date of birth!");
+        console.log(messageArray);
+        //Login
+        messageArray.push(
+            resultObject["loginUniqueness"] ? (
+                resultObject["loginLength"] ? "" : "The login must have 8 marks or more!"
+            ) : "This login is already in use!"
+        );
+        console.log(messageArray);
+        //Password
+        console.log(messageArray);
+        messageArray.push(resultObject["password"] ? "" : "The password must have 8 marks or more!");
+        //Password repeat
+        messageArray.push(resultObject["passwordRepeat"] ? "" : "Wrong password repeated!");
+        console.log(messageArray);
+
+        this.setState({errorObject: messageArray})
+    }
+    
     sendQueryToDatabase(user) {
+
         fetch(this.fetchPath, {
             method: 'POST',
             headers: {
@@ -24,15 +62,14 @@ export class AddUserModal extends Component {
                 surname:        user.surname.value,
                 dateOfBirth:    user.dateOfBirth.value,
                 login:          user.login.value,
-                password:       user.password.value
+                password:       user.password.value,
+                passwordRepeat: user.passwordRepeat.value
             })
         }, (error) => {
-            if(error) {
-                this.connected = false;
+            if(error)
                 alert("Failed!\n" + error);
-            }
-            else
-                this.connected = true;
+        }).then(res => res.json()).then(result => {
+            this.setErrorObject(result);
         });
     }
 
@@ -41,6 +78,11 @@ export class AddUserModal extends Component {
         event.preventDefault();
         if(window.confirm("Are You sure, You want to edit data of this user?"))
             this.sendQueryToDatabase(event.target);
+    }
+
+    checkVisibility(error) {
+        
+        return error === "" ? "invisible" : "visible";
     }
 
 
@@ -58,33 +100,39 @@ export class AddUserModal extends Component {
         return(
             <Form onSubmit={this.handleSubmit}>
                 <Form.Group controlId="name">
-                    <Form.Label>First Name</Form.Label>
-                    <Form.Control type="text" name="name" required placeholder="First Name"></Form.Control>
+                    <FloatingLabel label="First Name">
+                        <Form.Control type="text" name="name" required placeholder="First Name"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="surname">
-                    <Form.Label>Family Name</Form.Label>
-                    <Form.Control type="text" name="surname" required placeholder="Family Name"></Form.Control>
+                    <FloatingLabel label="Family Name">
+                        <Form.Control type="text" name="surname" required placeholder="Family Name"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="dateOfBirth">
-                    <Form.Label>Date Of Birth</Form.Label>
-                    <Form.Control type="date" name="dateOfBirth" required placeholder="Date Of Birth"></Form.Control>
+                    <FloatingLabel label="Date of birth">
+                        <Form.Control type="date" name="dateOfBirth" required placeholder="Date Of Birth"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="login">
-                    <Form.Label>Login</Form.Label>
-                    <Form.Control type="text" name="login" required placeholder="Login"></Form.Control>
+                    <FloatingLabel label="Login">
+                        <Form.Control type="text" name="login" required placeholder="Login"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="password">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" name="password" required placeholder="Password"></Form.Control>
+                    <FloatingLabel label="Password">
+                        <Form.Control type="password" name="password" required placeholder="Password"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group controlId="passwordRepeat">
-                    <Form.Label>Repeat Password</Form.Label>
-                    <Form.Control type="password" name="passwordRepeat" required placeholder="Repeat Password"></Form.Control>
+                    <FloatingLabel label="Repeat password">
+                        <Form.Control type="password" name="passwordRepeat" required placeholder="Repeat Password"></Form.Control>
+                    </FloatingLabel>
                 </Form.Group>
                 <br/>
                 <Form.Group>
@@ -93,13 +141,52 @@ export class AddUserModal extends Component {
             </Form>
         );
     }
-    
+
+    renderErrors() {
+
+        let errorTab = this.state.errorObject;
+
+
+        return(
+            <Form>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="name" disabled className={"alert_input " + this.checkVisibility(errorTab[0])}  defaultValue={errorTab[0] }></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="surname" disabled className={"alert_input " + this.checkVisibility(errorTab[1])} defaultValue={errorTab[1]}></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="dateOfBirth" disabled className={"alert_input " + this.checkVisibility(errorTab[2])} defaultValue={errorTab[2]}></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="login" disabled className={"alert_input " + this.checkVisibility(errorTab[3])} defaultValue={errorTab[3]}></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="password" disabled className={"alert_input " + this.checkVisibility(errorTab[4])} defaultValue={errorTab[4]}></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <FloatingLabel label="">
+                    <Form.Control type="text" name="passwordRepeat" disabled className={"alert_input " + this.checkVisibility(errorTab[5])} defaultValue={errorTab[5]}></Form.Control>
+                </FloatingLabel>
+                <br/>
+                <Alert variant="danger">qwerty</Alert>
+            </Form>
+        );
+    }
+
     renderModalBody() {
 
         return(
             <Row>
                 <Col sm={6}>
                     {this.renderForm()}
+                </Col>
+                <Col sm={6}>
+                    {this.renderErrors()}
                 </Col>
             </Row>
         );
@@ -142,17 +229,10 @@ export class AddUserModal extends Component {
 
     render() {
 
-        if(this.connected)
-            return(
-                <div className="container">
-                    {this.renderModal()}
-                </div>
-            );
-        else
-            return(
-                <div>
-                    Database failure! Come back later.
-                </div>
-            );
+        return(
+            <div className="container">
+                {this.renderModal()}
+            </div>
+        );
     }
 }

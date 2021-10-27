@@ -7,13 +7,14 @@ namespace WebAPI.Models
 {
     public class User
     {
-        public int id { get; set; }
-        public string name { get; set; }
-        public string surname { get; set; }
-        public DateTime dateOfBirth { get; set; }
-        public string login { get; set; }
-        public string password { get; set; }
-        public int role { get; set; }
-        public bool isDeleted { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
+        public string PasswordRepeat { get; set; }
+        public int Role { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
