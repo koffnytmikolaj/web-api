@@ -108,13 +108,26 @@ INSERT INTO dbo.Roles VALUES
 ('moderator');
 
 INSERT INTO dbo.Users VALUES
-('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, DEFAULT),
-('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', DEFAULT, DEFAULT),
-('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', DEFAULT, 1)
+('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, 0),
+('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', 1, 0),
+('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', 1, 1)
 
 
+-- Selecting tables
 SELECT *
 FROM dbo.Roles;
 
 SELECT *
 FROM dbo.Users;
+
+SELECT *
+FROM dbo.Companies;
+
+SELECT *
+FROM dbo.ContactPersons;
+
+SELECT *
+FROM dbo.Industries;
+
+SELECT *
+FROM dbo.TradeNotes;

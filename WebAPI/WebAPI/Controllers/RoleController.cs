@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
 using WebAPI.Models;
-using WebAPI.Services;
+using WebAPI.Helpers;
 
 namespace WebAPI.Controllers
 {
@@ -31,7 +31,7 @@ namespace WebAPI.Controllers
             string query =  "SELECT id, roleName " +
                             "FROM dbo.Roles";
 
-            DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
+            DataTable table = SqlHelper.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult(table);
         }
     }

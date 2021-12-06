@@ -1,0 +1,12 @@
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\bin\Debug\net5.0\AppDataAccessLibrary.deps.json
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\bin\Debug\net5.0\AppDataAccessLibrary.dll
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\bin\Debug\net5.0\ref\AppDataAccessLibrary.dll
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\bin\Debug\net5.0\AppDataAccessLibrary.pdb
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.csproj.AssemblyReference.cache
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.GeneratedMSBuildEditorConfig.editorconfig
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.AssemblyInfoInputs.cache
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.AssemblyInfo.cs
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.csproj.CoreCompileInputs.cache
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.dll
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\ref\AppDataAccessLibrary.dll
+D:\react\ReactSchoolProject\WebAPI\AppDataAccessLibrary\obj\Debug\net5.0\AppDataAccessLibrary.pdb

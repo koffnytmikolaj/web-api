@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebAPI.Services
+namespace WebAPI.Helpers
 {
-    static public class DateService
+    static public class DateHelper
     {
         static public string TransformDateToString(DateTime date)
         {

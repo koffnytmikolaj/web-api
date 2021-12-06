@@ -5,9 +5,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebAPI.Services
+namespace WebAPI.Helpers
 {
-    static public class SqlService
+    static public class SqlHelper
     {
         static private void LoadQuery(SqlConnection myCon, DataTable table, string query)
         {

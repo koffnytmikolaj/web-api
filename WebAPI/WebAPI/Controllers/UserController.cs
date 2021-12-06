@@ -3,8 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
-using WebAPI.Models;
-using WebAPI.Services;
+using DataAccessLibrary.Models;
+using WebAPI.Helpers;
+using Microsoft.EntityFrameworkCore;
+using DataAccessLibrary.DataAccess;
+using System.Linq;
+using System;
 
 namespace WebAPI.Controllers
 {
@@ -14,22 +18,24 @@ namespace WebAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly string sqlDataSource;
-        public UserController(IConfiguration configuration)
+        private readonly AppDbContext _context;
+        public UserController(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration;
             sqlDataSource = _configuration.GetConnectionString("CrmAppCon");
+            _context = context;
         }
 
 
         public JsonResult GetQuery(string query)
         {
-            DataTable table = SqlService.ExecuteSqlTable(sqlDataSource, query);
+            DataTable table = SqlHelper.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult(table);
         }
 
         public JsonResult ChangeDatabase(string query, string message)
         {
-            SqlService.ExecuteSqlTable(sqlDataSource, query);
+            SqlHelper.ExecuteSqlTable(sqlDataSource, query);
             return new JsonResult(message);
         }
 
@@ -38,51 +44,44 @@ namespace WebAPI.Controllers
         [HttpGet]
         public JsonResult GetAllUsers()
         {
-            string query = "SELECT u.id AS 'id', u.name AS 'name', surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role AS 'roleId', isDeleted, roleName AS 'roleName' " +
-                            "FROM dbo.Users AS u " +
-                                "JOIN dbo.Roles AS r " +
-                                    "ON r.id = u.role";
-            
-            return GetQuery(query);
+            //var users = _context.Users.ToList();
+            var users = _context.Users.ToList();
+            return new JsonResult(users);
         }
 
         [Route("GetOnlyAvailableUsers")]
         [HttpGet]
         public JsonResult GetOnlyAvailableUsers()
         {
-            string query = "SELECT u.id AS 'id', u.name AS 'name', surname, CONVERT(varchar(10), dateOfBirth, 120) AS dateOfBirth, login, password, role AS 'roleId', isDeleted, roleName AS 'roleName' " +
-                            "FROM dbo.Users AS u " +
-                                "JOIN dbo.Roles AS r " +
-                                    "ON r.id = u.role " +
-                            "WHERE isDeleted=0";
-
-            return GetQuery(query);
+            var users = _context.Users.Where(user => user.IsDeleted == false).ToList();
+            return new JsonResult(users);
         }
 
         [Route("GetUserWithIdenticalLogin")]
         [HttpGet]
-        public JsonResult GetUserWithIdenticalLogin(User user)
+        public JsonResult GetUserWithIdenticalLogin(User newUser)
         {
-            string query =  "SELECT id " +
+            /*string query =  "SELECT id " +
                             "FROM dbo.Users " +
                             "WHERE login LIKE '" + user.Login + "'";
 
-            return GetQuery(query);
+            return GetQuery(query);*/
+
+            var user = _context.Users.Where(u => u.Login == newUser.Login).First();
+            return new JsonResult(user);
         }
 
         [Route("AddNewUser")]
         [HttpPost]
         public JsonResult AddNewUser(User user)
         {
-            Dictionary<string, bool> correctDataArray = UserVerificationService.VerifyUser(user, sqlDataSource);
-            if (!UserVerificationService.VerifyTable(correctDataArray))
-                return new JsonResult(JsonConvert.SerializeObject(correctDataArray, Formatting.Indented));
-
+            /*
             string query =  "INSERT INTO dbo.Users VALUES " +
-                            "('" + user.Name + "', '" + user.Surname + "', '" + DateService.TransformDateToString(user.DateOfBirth) + 
-                                "', '" + user.Login + "', '" + user.Password + "', DEFAULT, DEFAULT)";
+                            "('" + user.Name + "', '" + user.Surname + "', '" + DateHelper.TransformDateToString(user.DateOfBirth) + 
+                                "', '" + user.Login + "', '" + user.Password + "', DEFAULT, DEFAULT)";*/
 
-            return ChangeDatabase(query, "Successfully added user!");
+            _context.Users.Add(user);
+            return new JsonResult("Successfully added user!");
             
         }
 
@@ -115,7 +114,7 @@ namespace WebAPI.Controllers
             string query =  "UPDATE dbo.Users " +
                             "SET name = '" + user.Name + "', " +
                                 "surname = '" + user.Surname + "', " +
-                                "dateOfBirth = '" + DateService.TransformDateToString(user.DateOfBirth) + "', " +
+                                "dateOfBirth = '" + DateHelper.TransformDateToString(user.DateOfBirth) + "', " +
                                 "login = '" + user.Login + "', " +
                                 "role = " + user.Role + " " +
                             "WHERE id = " + user.Id;
