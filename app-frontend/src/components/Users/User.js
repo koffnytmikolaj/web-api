@@ -127,9 +127,6 @@ export class User extends Component {
 
     componentDidMount() {
 
-        console.log(this.props);
-        const { page } = this.props.match.params;
-        console.log(page);
         this._isMounted = true;
         this.getRoles(true);
         this.refreshList(true);

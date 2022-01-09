@@ -7,13 +7,16 @@ namespace WebAPI.Helpers
 {
     static public class LoginHelper
     {
-        static public User TryLogIn(AppDbContext _context, User user)
+        static public User TryLogIn(AppDbContext _context, User user, bool newUser = true)
         {
             User currentUser = _context.Users.Where(u => u.Login == user.Login).First();
             if (!BCrypt.Net.BCrypt.Verify(user.Password, currentUser.Password))
                 throw new InvalidOperationException();
-            if (!currentUser.IsDeleted)
-                throw new Exception();
+            if(!newUser) {
+                if (!currentUser.IsDeleted)
+                    throw new Exception();
+            }
+            
             return currentUser;
         }
 

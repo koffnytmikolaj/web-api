@@ -106,7 +106,7 @@ namespace WebAPI.Controllers
         {
             try
             {
-                User editedUser = LoginHelper.TryLogIn(_context, user);
+                User editedUser = LoginHelper.TryLogIn(_context, user, false);
                 string passwordVerification = UserVerificationHelper.IsNewPasswordCorrect(user.NewPassword);
                 if (string.IsNullOrEmpty(passwordVerification))
                 {
