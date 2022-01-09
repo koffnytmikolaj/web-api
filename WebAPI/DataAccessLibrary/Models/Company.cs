@@ -9,34 +9,25 @@ namespace DataAccessLibrary.Models
 {
     public class Company
     {
-        public int Id { get; set; }
+        [Key]
+        public int CompanyId { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Name { get; set; }
 
-        [Required]
-        [Column(TypeName = "char(10)")]
         public string Nip { get; set; }
 
-        [Required]
-        public Industry Industry { get; set; }
+        public int IndustryId { get; set; }
+        public virtual Industry Industry { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Address { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Localization { get; set; }
 
-        [Required]
-        public User AddingCompanyUser { get; set; }
+        public int UserId { get; set; }
+        public virtual User.User User { get; set; }
 
-        [Required]
         public DateTime DateOfAdd { get; set; }
 
-        [Required]
         public bool IsDeleted { get; set; }
     }
 }

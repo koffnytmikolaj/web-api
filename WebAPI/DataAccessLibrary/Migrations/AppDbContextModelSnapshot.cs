@@ -15,24 +15,19 @@ namespace DataAccessLibrary.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.0")
+                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.0");
 
             modelBuilder.Entity("DataAccessLibrary.Models.Company", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CompanyId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("AddingCompanyUserId")
-                        .HasColumnType("int");
+                        .UseIdentityColumn();
 
                     b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfAdd")
                         .HasColumnType("datetime2");
@@ -44,149 +39,130 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Localization")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nip")
-                        .IsRequired()
-                        .HasColumnType("char(10)")
-                        .HasMaxLength(10);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("AddingCompanyUserId");
+                    b.HasKey("CompanyId");
 
                     b.HasIndex("IndustryId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.ContactPerson", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ContactPersonId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
-                    b.Property<int>("AddingPersonUserId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("JobTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("char(9)")
-                        .HasMaxLength(9);
-
-                    b.Property<int>("RelatedCompanyId")
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Surname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("AddingPersonUserId");
+                    b.HasKey("ContactPersonId");
 
-                    b.HasIndex("RelatedCompanyId");
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ContactPersons");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Industry", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("IndustryId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("IndustryName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("IndustryId");
 
                     b.ToTable("Industries");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Role", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("RoleId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("RoleName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("RoleId");
 
                     b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.TradeNote", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TradeNoteId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
-                    b.Property<int>("AddingNoteUserId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("NoteContent")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(512)")
-                        .HasMaxLength(512);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RelatedCompanyId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TradeNoteId");
 
-                    b.HasIndex("AddingNoteUserId");
+                    b.HasIndex("CompanyId");
 
-                    b.HasIndex("RelatedCompanyId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("TradeNotes");
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.User", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.User.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -195,25 +171,21 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Login")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Surname")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
                     b.HasIndex("RoleId");
 
@@ -222,56 +194,75 @@ namespace DataAccessLibrary.Migrations
 
             modelBuilder.Entity("DataAccessLibrary.Models.Company", b =>
                 {
-                    b.HasOne("DataAccessLibrary.Models.User", "AddingCompanyUser")
-                        .WithMany()
-                        .HasForeignKey("AddingCompanyUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("DataAccessLibrary.Models.Industry", "Industry")
                         .WithMany()
                         .HasForeignKey("IndustryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DataAccessLibrary.Models.User.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Industry");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.ContactPerson", b =>
                 {
-                    b.HasOne("DataAccessLibrary.Models.User", "AddingPersonUser")
+                    b.HasOne("DataAccessLibrary.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("AddingPersonUserId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataAccessLibrary.Models.Company", "RelatedCompany")
+                    b.HasOne("DataAccessLibrary.Models.User.User", "User")
                         .WithMany()
-                        .HasForeignKey("RelatedCompanyId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.TradeNote", b =>
                 {
-                    b.HasOne("DataAccessLibrary.Models.User", "AddingNoteUser")
+                    b.HasOne("DataAccessLibrary.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("AddingNoteUserId")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DataAccessLibrary.Models.Company", "RelatedCompany")
+                    b.HasOne("DataAccessLibrary.Models.User.User", "User")
                         .WithMany()
-                        .HasForeignKey("RelatedCompanyId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DataAccessLibrary.Models.User", b =>
+            modelBuilder.Entity("DataAccessLibrary.Models.User.User", b =>
                 {
                     b.HasOne("DataAccessLibrary.Models.Role", "Role")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("DataAccessLibrary.Models.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

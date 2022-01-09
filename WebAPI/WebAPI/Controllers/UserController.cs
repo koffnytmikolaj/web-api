@@ -3,12 +3,14 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Data;
+using DataAccessLibrary.Models.User;
 using DataAccessLibrary.Models;
 using WebAPI.Helpers;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLibrary.DataAccess;
 using System.Linq;
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace WebAPI.Controllers
 {
@@ -16,110 +18,197 @@ namespace WebAPI.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly string sqlDataSource;
         private readonly AppDbContext _context;
-        public UserController(IConfiguration configuration, AppDbContext context)
+        private readonly JwtService _jwtService;
+        private readonly int usersPerPage = 6;
+
+        public UserController(AppDbContext context, JwtService jwtService)
         {
-            _configuration = configuration;
-            sqlDataSource = _configuration.GetConnectionString("CrmAppCon");
             _context = context;
-        }
-
-
-        public JsonResult GetQuery(string query)
-        {
-            DataTable table = SqlHelper.ExecuteSqlTable(sqlDataSource, query);
-            return new JsonResult(table);
-        }
-
-        public JsonResult ChangeDatabase(string query, string message)
-        {
-            SqlHelper.ExecuteSqlTable(sqlDataSource, query);
-            return new JsonResult(message);
+            _jwtService = jwtService;
         }
 
 
         [Route("GetAllUsers")]
         [HttpGet]
-        public JsonResult GetAllUsers()
+        public JsonResult GetAllUsers(int page = 1)
         {
-            //var users = _context.Users.ToList();
-            var users = _context.Users.ToList();
+            ICollection<Role> roles = _context.Roles.ToList();
+            var users = _context.Users.ToList().Join(
+                roles,
+                u => u.RoleId,
+                r => r.RoleId,
+                (user, role) => new 
+                {
+                    user.UserId, 
+                    user.Name, 
+                    user.Surname, 
+                    DateOfBirth = DateHelper.TransformDateToString(user.DateOfBirth), 
+                    user.Login,
+                    user.RoleId, 
+                    role.RoleName, 
+                    user.IsDeleted
+                }
+            )
+                .Skip((page - 1) * usersPerPage)
+                .Take(usersPerPage);
+
             return new JsonResult(users);
         }
 
-        [Route("GetOnlyAvailableUsers")]
+        [Route("GetAvailableUsers")]
         [HttpGet]
-        public JsonResult GetOnlyAvailableUsers()
+        public JsonResult GetOnlyAvailableUsers(int page = 1)
         {
-            var users = _context.Users.Where(user => user.IsDeleted == false).ToList();
+
+            ICollection<Role> roles = _context.Roles.ToList();
+            var users = _context.Users.ToList().Join(
+                roles,
+                u => u.RoleId,
+                r => r.RoleId,
+                (user, role) => new 
+                {
+                    user.UserId, 
+                    user.Name, 
+                    user.Surname, 
+                    DateOfBirth = DateHelper.TransformDateToString(user.DateOfBirth), 
+                    user.Login,
+                    user.RoleId, 
+                    role.RoleName, 
+                    user.IsDeleted
+                }
+            )
+                .Where(user => user.IsDeleted == false)
+                .Skip((page - 1) * usersPerPage)
+                .Take(usersPerPage);
+
             return new JsonResult(users);
         }
 
-        [Route("GetUserWithIdenticalLogin")]
+        [Route("GetNumberOfPages")]
         [HttpGet]
-        public JsonResult GetUserWithIdenticalLogin(User newUser)
+        public JsonResult GetNumberOfPages(bool all = false)
         {
-            /*string query =  "SELECT id " +
-                            "FROM dbo.Users " +
-                            "WHERE login LIKE '" + user.Login + "'";
+            int numberOfUsers = all 
+                ? _context.Users.Count() 
+                : _context.Users.Where(u => u.IsDeleted == false).Count();
+            int additionalPage =
+                numberOfUsers % usersPerPage == 0
+                ? 0
+                : 1;
 
-            return GetQuery(query);*/
+            return new JsonResult(numberOfUsers / usersPerPage + additionalPage);
+        }
 
-            var user = _context.Users.Where(u => u.Login == newUser.Login).First();
-            return new JsonResult(user);
+        [Route("ChangePassword")]
+        [HttpPut]
+        public JsonResult ChangePassword(UserPasswordChange user)
+        {
+            try
+            {
+                User editedUser = LoginHelper.TryLogIn(_context, user);
+                string passwordVerification = UserVerificationHelper.IsNewPasswordCorrect(user.NewPassword);
+                if (string.IsNullOrEmpty(passwordVerification))
+                {
+                    editedUser.Password = BCrypt.Net.BCrypt.HashPassword(user.NewPassword);
+                    _context.SaveChanges();
+                }
+                return new JsonResult(passwordVerification);
+            }
+            catch(Exception)
+            {
+                return new JsonResult("Wrong password!");
+            }
         }
 
         [Route("AddNewUser")]
         [HttpPost]
-        public JsonResult AddNewUser(User user)
+        public JsonResult AddNewUser(UserRegistration user)
         {
-            /*
-            string query =  "INSERT INTO dbo.Users VALUES " +
-                            "('" + user.Name + "', '" + user.Surname + "', '" + DateHelper.TransformDateToString(user.DateOfBirth) + 
-                                "', '" + user.Login + "', '" + user.Password + "', DEFAULT, DEFAULT)";*/
+            Dictionary<string, string> registrationTable = UserVerificationHelper.VerifyNewUser(user, _context);
+            if(!UserVerificationHelper.VerifyTable(registrationTable))
+                return new JsonResult(registrationTable);
 
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.RoleId = 1;
+            user.IsDeleted = false;
             _context.Users.Add(user);
-            return new JsonResult("Successfully added user!");
-            
+            _context.SaveChanges();
+            return new JsonResult(1);
         }
 
         [Route("DeleteUser")]
         [HttpPut]
         public JsonResult DeleteUser(User user)
         {
-            string query =  "UPDATE dbo.Users " +
-                            "SET isDeleted = 1 " +
-                            "WHERE id = " + user.Id;
-
-            return ChangeDatabase(query, "Successfully deleted user!");
-        }
-
-        [Route("RestoreUser")]
-        [HttpPut]
-        public JsonResult RestoreUser(User user)
-        {
-            string query = "UPDATE dbo.Users " +
-                            "SET isDeleted = 0 " +
-                            "WHERE id = " + user.Id;
-
-            return ChangeDatabase(query, "Successfully restored user!");
+            try
+            {
+                int deletingUserRole = LoginHelper.GetUserByCookie(Request.Cookies["jwt"], _jwtService, _context).RoleId;
+                User deletedUser = _context.Users.Where(u => u.UserId == user.UserId).First();
+                switch (deletedUser.RoleId)
+                {
+                    case 1:
+                        if (deletingUserRole == 1)
+                            throw new Exception();
+                        break;
+                    case 2:
+                        if (deletingUserRole == 1 || deletingUserRole == 3)
+                            throw new Exception();
+                        break;
+                    case 3:
+                        if (deletingUserRole == 1 || deletingUserRole == 3)
+                            throw new Exception();
+                        break;
+                    default:
+                        throw new Exception();
+                }
+                deletedUser.Name = null;
+                deletedUser.Surname = null;
+                deletedUser.Password = null;
+                deletedUser.IsDeleted = true;
+                _context.SaveChanges();
+                return new JsonResult(true);
+            }
+            catch(Exception)
+            {
+                return new JsonResult(false);
+            }
         }
 
         [Route("EditUser")]
         [HttpPut]
         public JsonResult EditUser(User user)
         {
-            string query =  "UPDATE dbo.Users " +
-                            "SET name = '" + user.Name + "', " +
-                                "surname = '" + user.Surname + "', " +
-                                "dateOfBirth = '" + DateHelper.TransformDateToString(user.DateOfBirth) + "', " +
-                                "login = '" + user.Login + "', " +
-                                "role = " + user.Role + " " +
-                            "WHERE id = " + user.Id;
+            Dictionary<string, string> editionTable = UserVerificationHelper.VerifyUser(user);
+            if (!UserVerificationHelper.VerifyTable(editionTable))
+                return new JsonResult(editionTable);
+            
+            User editedUser = _context.Users.Where(u => u.UserId == user.UserId).First();
+            editedUser.Surname = user.Surname;
+            editedUser.DateOfBirth = user.DateOfBirth;
+            editedUser.Name = user.Name;
+            _context.SaveChanges();
+            return new JsonResult(1);
+        }
 
-            return ChangeDatabase(query, "Successfully edited user!");
+        [Route("ChangeRole")]
+        [HttpPut]
+        public JsonResult EditUserRole(User user)
+        {
+            try {
+                int editingUserRole = LoginHelper.GetUserByCookie(Request.Cookies["jwt"], _jwtService, _context).RoleId;
+                if (editingUserRole != 2)
+                    throw new Exception();
+
+                User editedUser = _context.Users.Where(u => u.UserId == user.UserId).First();
+                editedUser.RoleId = user.RoleId;
+                _context.SaveChanges();
+                return new JsonResult(true);
+            }
+            catch(Exception)
+            {
+                return new JsonResult(false);
+            }
         }
     }
 }

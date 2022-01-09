@@ -8,10 +8,9 @@ namespace DataAccessLibrary.Models
 {
     public class Industry
     {
-        public int Id { get; set; }
+        [Key]
+        public int IndustryId { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string IndustryName { get; set; }
     }
 }

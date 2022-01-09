@@ -14,11 +14,16 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using DataAccessLibrary.DataAccess;
+using WebAPI.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
 
 namespace WebAPI
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -32,9 +37,13 @@ namespace WebAPI
             //Enable CORS
             services.AddCors(c =>
             {
-                c.AddPolicy("AllowOrigin", options =>
+                c.AddPolicy(MyAllowSpecificOrigins, options =>
                 {
-                    options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                    options
+                    .WithOrigins("http://localhost:3000")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
                 });
             });
 
@@ -57,16 +66,14 @@ namespace WebAPI
                 options.UseSqlServer(Configuration.GetConnectionString("CrmAppCon")
                 )
             );
+
+            services.AddScoped<JwtService>();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest); ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors(options =>
-            {
-                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-            });
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -78,11 +85,23 @@ namespace WebAPI
 
             app.UseRouting();
 
+            app.UseCors(MyAllowSpecificOrigins);
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGet("/echo",
+                context => context.Response.WriteAsync("echo"))
+                .RequireCors(MyAllowSpecificOrigins);
+
+                endpoints.MapControllers()
+                         .RequireCors(MyAllowSpecificOrigins);
+
+                endpoints.MapGet("/echo2",
+                    context => context.Response.WriteAsync("echo2"));
+
             });
         }
     }

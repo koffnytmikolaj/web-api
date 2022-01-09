@@ -9,7 +9,7 @@ namespace WebAPI.Helpers
     {
         static public string TransformDateToString(DateTime date)
         {
-            return date.ToString("yyyy-MM-dd HH:mm:ss");
+            return date.ToString("yyyy-MM-dd");
         }
     }
 }

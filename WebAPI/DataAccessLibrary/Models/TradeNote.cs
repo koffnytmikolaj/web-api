@@ -8,19 +8,17 @@ namespace DataAccessLibrary.Models
 {
     public class TradeNote
     {
-        public int Id { get; set; }
+        [Key]
+        public int TradeNoteId { get; set; }
 
-        [Required]
-        [MaxLength(512)]
         public string NoteContent { get; set; }
 
-        [Required]
         public bool IsDeleted { get; set; }
 
-        [Required]
-        public Company RelatedCompany { get; set; }
+        public int CompanyId { get; set; }
+        public virtual Company Company { get; set; }
 
-        [Required]
-        public User AddingNoteUser { get; set; }
+        public int UserId { get; set; }
+        public virtual User.User User { get; set; }
     }
 }

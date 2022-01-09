@@ -8,10 +8,12 @@ namespace DataAccessLibrary.Models
 {
     public class Role
     {
-        public int Id { get; set; }
+        [Key]
+        public int RoleId { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string RoleName { get; set; }
+
+
+        public ICollection<User.User> Users { get; set; }
     }
 }

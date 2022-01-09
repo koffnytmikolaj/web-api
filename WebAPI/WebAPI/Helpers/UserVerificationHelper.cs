@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebAPI.Models;
+using DataAccessLibrary.Models.User;
+using WebAPI.Controllers;
 using System.Data;
+using DataAccessLibrary.DataAccess;
 
 namespace WebAPI.Helpers
 {
@@ -12,17 +14,8 @@ namespace WebAPI.Helpers
         private static readonly int Login_PasswordMinLength = 8;
         private static readonly int UserMinAgeInDays = 1000;
         
-        private static bool IsLoginUnique(string login, string sqlDataSource)
-        {
-            string query =  "SELECT id " +
-                            "FROM dbo.Users " +
-                            "WHERE login LIKE '" + login + "'";
 
-            DataTable table = SqlHelper.ExecuteSqlTable(sqlDataSource, query);
-            return table.Rows.Count == 0;
-        }
-
-        private static bool IsPasswordEqualsPasswordRepeat(string password, string passwordRepeat)
+        private static bool PasswordEqualsPasswordRepeat(string password, string passwordRepeat)
         {
             return password == passwordRepeat;
         }
@@ -42,54 +35,60 @@ namespace WebAPI.Helpers
             return char.IsUpper(str[0]);
         }
 
-        private static void AddNameToList(List<RegistrationData> correctDataList, User user)
+        private static bool WhetherStringEndsWithLowerLetters(string str)
         {
-            bool correct = WhetherStringStartsWithCapitalLetter(user.Name);
+            foreach(char mark in str.Skip(1))
+            {
+                if (char.IsUpper(mark))
+                    return false;
+            }
+            return true;
+        }
+
+
+        private static string VerifyName(string name)
+        {
             string value;
 
-            if (correct)
+            if (WhetherStringStartsWithCapitalLetter(name) && WhetherStringEndsWithLowerLetters(name))
                 value = "";
             else
                 value = "Type correct name!";
 
-            correctDataList.Add(new RegistrationData("name", value, correct));
+            return value;
         }
 
-        private static void AddSurnameToList(List<RegistrationData> correctDataList, User user)
+        private static string VerifySurname(string surname)
         {
-            bool correct = WhetherStringStartsWithCapitalLetter(user.Surname);
             string value;
 
-            if (correct)
+            if (WhetherStringStartsWithCapitalLetter(surname) && WhetherStringEndsWithLowerLetters(surname))
                 value = "";
             else
                 value = "Type correct surname!";
 
-            correctDataList.Add(new RegistrationData("surname", value, correct));
+            return value;
         }
 
-        private static void AddDateToList(List<RegistrationData> correctDataList, User user)
+        private static string VerifyDate(DateTime date)
         {
-            bool correct = IsDateCorrect(user.DateOfBirth);
             string value;
 
-            if (correct)
+            if (IsDateCorrect(date))
                 value = "";
             else
                 value = "Type correct date of birth!";
 
-            correctDataList.Add(new RegistrationData("date", value, correct));
+            return value;
         }
 
-        private static void AddLoginToList(List<RegistrationData> correctDataList , User user, string sqlDataSource)
+        private static string VerifyLogin(string login, AppDbContext context)
         {
-            bool correct = IsLoginUnique(user.Login, sqlDataSource);
             string value;
 
-            if(correct)
+            if (!context.Users.Where(u => u.Login == login).Any())
             {
-                correct = IsStringLengthLongerOrEqualMinLength(user.Login);
-                if(correct)
+                if (IsStringLengthLongerOrEqualMinLength(login))
                     value = "";
                 else
                     value = "The login must have 8 marks or more!";
@@ -97,57 +96,80 @@ namespace WebAPI.Helpers
             else
                 value = "This login is already in use!";
 
-            correctDataList.Add(new RegistrationData("login", value, correct));
+            return value;
         }
 
-        private static void AddPasswordToList(List<RegistrationData> correctDataList, User user)
+        private static string VerifyPassword(string password)
         {
-            bool correct = IsStringLengthLongerOrEqualMinLength(user.Password);
             string value;
 
-            if (correct)
+            if (IsStringLengthLongerOrEqualMinLength(password))
                 value = "";
             else
                 value = "The password must have 8 marks or more!";
 
-            correctDataList.Add(new RegistrationData("password", value, correct));
+            return value;
         }
 
-        private static void AddPasswordRepeatToList(List<RegistrationData> correctDataList, User user)
+        private static string VerifyPasswordRepeat(string password, string passwordRepeat)
         {
-            bool correct = IsPasswordEqualsPasswordRepeat(user.Password, user.PasswordRepeat);
             string value;
 
-            if (correct)
+            if (PasswordEqualsPasswordRepeat(password, passwordRepeat))
                 value = "";
             else
                 value = "Wrong password repeated!";
 
-            correctDataList.Add(new RegistrationData("passwordRepeat", value, correct));
+            return value;
         }
 
-        public static bool VerifyTable(List<RegistrationData> correctDataList)
+
+        public static bool VerifyTable(Dictionary<string, string> correctDataList)
         {
-            foreach(RegistrationData correctDataSegment in correctDataList)
+            foreach(var correctDataSegment in correctDataList)
             {
-                if (!correctDataSegment.Correct)
+                if (correctDataSegment.Value != "")
                     return false;
             }
             return true;
         }
 
-        public static List<RegistrationData> VerifyUser(User user, string sqlDataSource)
-        {
-            List<RegistrationData> correctDataList = new();
 
-            AddNameToList(correctDataList, user);
-            AddSurnameToList(correctDataList, user);
-            AddDateToList(correctDataList, user);
-            AddLoginToList(correctDataList, user, sqlDataSource);
-            AddPasswordToList(correctDataList, user);
-            AddPasswordRepeatToList(correctDataList, user);
+        private static void RegistrationVerification(Dictionary<string, string> correctDataList, UserRegistration user, AppDbContext context)
+        {
+            correctDataList.Add("login",            VerifyLogin(user.Login, context));
+            correctDataList.Add("password",         VerifyPassword(user.Password));
+            correctDataList.Add("passwordRepeat",   VerifyPasswordRepeat(user.Password, user.PasswordRepeat));
+        }
+
+        private static void StandardVerification(Dictionary<string, string> correctDataList, User user)
+        {
+            correctDataList.Add("name",     VerifyName(user.Name));
+            correctDataList.Add("surname",  VerifySurname(user.Surname));
+            correctDataList.Add("date",     VerifyDate(user.DateOfBirth));
+        }
+
+
+        public static Dictionary<string, string> VerifyNewUser(UserRegistration user, AppDbContext context)
+        {
+            Dictionary<string, string> correctDataList = new();
+            StandardVerification(correctDataList, user);
+            RegistrationVerification(correctDataList, user, context);
 
             return correctDataList;
+        }
+
+        public static Dictionary<string, string> VerifyUser(User user)
+        {
+            Dictionary<string, string> correctDataList = new();
+            StandardVerification(correctDataList, user);
+
+            return correctDataList;
+        }
+
+        public static string IsNewPasswordCorrect(string password)
+        {
+            return VerifyPassword(password);
         }
     }
 }

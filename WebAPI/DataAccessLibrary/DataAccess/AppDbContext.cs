@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccessLibrary.Models;
+using DataAccessLibrary.Models.User;
+
 
 namespace DataAccessLibrary.DataAccess
 {
@@ -18,5 +20,6 @@ namespace DataAccessLibrary.DataAccess
         public DbSet<Company> Companies { get; set; }
         public DbSet<TradeNote> TradeNotes { get; set; }
         public DbSet<ContactPerson> ContactPersons { get; set; }
+
     }
 }

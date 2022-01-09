@@ -102,12 +102,12 @@ CREATE INDEX IX_ContactPersons_Surname
 
 
 -- Filling tables
-INSERT INTO dbo.Roles VALUES
+INSERT INTO [CRM_DB].[dbo].[Roles] VALUES
 ('user'),
 ('admin'),
 ('moderator');
 
-INSERT INTO dbo.Users VALUES
+INSERT INTO [CRM_DB].[dbo].[Users] VALUES
 ('Mikolaj', 'Koffnyt', '2000-05-06', 'qwertyuiop', 'asdfghjkl', 2, 0),
 ('Jan', 'Kowalski', '2001-02-12', 'qazwsx', 'edcrfv', 1, 0),
 ('Krzysztof', 'Nowak', '1998-10-03', 'rfvtgb', 'ujmikl', 1, 1)

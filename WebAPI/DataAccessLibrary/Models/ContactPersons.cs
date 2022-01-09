@@ -9,35 +9,25 @@ namespace DataAccessLibrary.Models
 {
     public class ContactPerson
     {
-        public int Id { get; set; }
+        [Key]
+        public int ContactPersonId { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Name { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Surname { get; set; }
 
-        [Required]
-        [Column(TypeName = "char(9)")]
         public string PhoneNumber { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string Email { get; set; }
 
-        [Required]
-        [MaxLength(32)]
         public string JobTitle { get; set; }
 
-        [Required]
-        public Company RelatedCompany { get; set; }
+        public int CompanyId { get; set; }
+        public virtual Company Company { get; set; }
 
-        [Required]
-        public User AddingPersonUser { get; set; }
+        public int UserId { get; set; }
+        public virtual User.User User { get; set; }
 
-        [Required]
         public bool IsDeleted { get; set; }
     }
 }
