@@ -1,6 +1,6 @@
 import './App.css';
 import 'animate.css';
-import { Content } from './components/Content';
+import Content from './components/Content';
 
 
 

@@ -20,7 +20,7 @@ export class ChangePasswordModal extends Component {
 
     setErrorObject(result) {
 
-        if(result == null)
+        if(result === "")
             window.location.reload();
         else
             this.setState({wrongPassword: result});

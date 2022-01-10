@@ -1,214 +1,170 @@
-import React, {Component} from "react";
-import { Button, Nav } from "react-bootstrap";
-import { Redirect } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Nav } from "react-bootstrap";
+import { Redirect, useLocation } from "react-router-dom";
 import { ErrorView } from "../AdditionalElements/ErrorView";
 import { LoadingBar } from "../AdditionalElements/LoadingBar";
 import { PagePagination } from "../Pagination/PagePagination";
-import { UserTable } from "./Table/UserTable";
+import UserTable from "./Table/UserTable";
 
-export class User extends Component {
+function User(props) {
+
+    const location = useLocation();
     
-    constructor(props) {
+    const [userList, setUserList] = useState([]);
+    const [roleList, setRoleList] = useState([]);
+    const [numberOfPages, setNumberOfPages] = useState(0);
+    const [currentPage, setCurrentPage] = useState(new URLSearchParams(location.search).get("page"));
+    const [connected, setConnected] = useState(true);
+    const [redirect, setRedirect] = useState(false);
 
-        super(props);
-        this.state = {
-            userList: [],
-            roleList: [],
-            numberOfPages: 0,
-            currentPage: 1,
-            userAuthorized: null,
-            connected: true,
-            dataLoaded: 1,
+    const [rolesLoaded, setRolesLoaded] = useState(false);
+    const [usersLoaded, setUsersLoaded] = useState(false);
+    const [pagesLoaded, setPagesLoaded] = useState(false);
+
+    const appPath = '/user/';
+    const rolePath = process.env.REACT_APP_API + 'role/GetRoles';
+    const numberOfPagesPath = process.env.REACT_APP_API + 'user/GetNumberOfPages';
+    const fetchPath = process.env.REACT_APP_API + 'user/GetAvailableUsers';
+    
+
+    function getRoles(firstLoad = false) {
+        (
+            async () => {
+                await fetch(rolePath).then(response => 
+                    response.json(),
+                        (error) => {
+                            if(error)
+                                setConnected(false);
+                            else
+                                setConnected(true);
+                        }
+                    ).then(data => {
+                        setRoleList(data);
+                        if(firstLoad) {
+                            setRolesLoaded(true);
+                        }  
+                    }
+                );
+            }
+        )();
+    }
+
+    function getGetUsersPath() {
+
+        let curPage = new URLSearchParams(location.search).get("page");
+        if(curPage == null || curPage < 1)
+            curPage = 1;
+        setCurrentPage(curPage);
+        return "?page=" + curPage;
+    }
+
+    function getUsers(firstLoad) {
+
+        let getUsersPath = fetchPath + "/" + getGetUsersPath();
+        (
+            async () => {
+                await fetch(getUsersPath).then(response => 
+                    response.json(),
+                        (error) => {
+                            if(error)
+                                setConnected(false);
+                            else
+                                setConnected(true);
+                        }
+                ).then(data => {
+                    setUserList(data);
+                    if(firstLoad) {
+                        setUsersLoaded(true);
+                    }
+                });
+            }
+        )();
+    }
+
+    function getNumberOfPages(firstLoad) {
+        (
+            async () => {
+                await fetch(numberOfPagesPath).then(response => 
+                    response.json(),
+                        (error) => {
+                            if(error)
+                                setConnected(false);
+                            else
+                                setConnected(true);
+                        }
+                    )
+                .then(response => {
+                    setNumberOfPages(response);
+                    if(firstLoad) {
+                        setPagesLoaded(true);
+                    }
+                        
+                });
+            }
+        )();
+    }
+    
+    function refreshList(firstLoad = false) {
+
+        getUsers(firstLoad)
+        getNumberOfPages(firstLoad);
+    }
+
+    function getPrimaryData() {
+        const authorization = () => {
+
+            let loggedUser = props.logged_user;
             
-        }
-    }
-
-    _isMounted = false;
-    showAll = false;
-
-    appPath = '/user/';
-    rolePath = process.env.REACT_APP_API + 'role/GetRoles';
-    availableUsersPath = process.env.REACT_APP_API + 'user/GetAvailableUsers';
-    allUsersPath = process.env.REACT_APP_API + 'user/GetAllUsers';
-    numberOfPagesPath = process.env.REACT_APP_API + 'user/GetNumberOfPages';
-    deletePath = process.env.REACT_APP_API + 'user/DeleteUser';
-    fetchPath = this.availableUsersPath;
-
-    async getRoles(firstLoad = false) {
-
-        await fetch(this.rolePath).then(response => 
-            response.json(),
-                (error) => {
-                    if(error)
-                        this.setState({connected: false});
-                    else
-                        this.setState({connected: true});
-                }
-            ).then(data => {
-                if(this._isMounted) {
-                    this.setState({roleList: data});
-                    if(firstLoad)
-                        this.setState({dataLoaded: this.state.dataLoaded + 1});
-                }
+            if(loggedUser === -1 || loggedUser === 0) {
+                setRedirect(true);
+                return false;
             }
-        );
-    }
-
-    getPageNumber() {
-
-        let pageNumber = this.props.location.pathname.substr(6);
-        if(pageNumber !== "")
-            return pageNumber
-        else
-            return 1;
-    }
-
-    getGetUsersPath() {
-
-        let currentPage = this.getPageNumber();
-        this.setState({currentPage: currentPage});
-        return this.fetchPath + "/?page=" + currentPage;
-    }
-
-    async getUsers(firstLoad) {
-
-        let getUsersPath = this.getGetUsersPath();
-
-        await fetch(getUsersPath).then(response => 
-            response.json(),
-                (error) => {
-                    if(error)
-                        this.setState({connected: false});
-                    else
-                        this.setState({connected: true});
-                }
-            ).then(data => {
-                if(this._isMounted) {
-                    this.setState({userList:data});
-                    if(firstLoad)
-                        this.setState({dataLoaded: this.state.dataLoaded + 1});
-                }
-            });
-    }
-
-    getGetNumberOfPagesPath() {
-
-        return this.numberOfPagesPath + "?all=" + this.showAll;
-    }
-
-    async getNumberOfPages(firstLoad) {
-
-        let getNumberOfPagesPath = this.getGetNumberOfPagesPath();
-
-        await fetch(getNumberOfPagesPath).then(response => 
-            response.json(),
-                (error) => {
-                    if(error)
-                        this.setState({connected: false});
-                    else
-                        this.setState({connected: true});
-                }
-            )
-        .then(response => {
-            if(this._isMounted) {
-                this.setState({numberOfPages: response});
-                if(firstLoad)
-                    this.setState({dataLoaded: this.state.dataLoaded + 1});
+            else {
+                return true;
             }
-        });
-    }
-    
-    async refreshList(firstLoad = false) {
-
-        this.getUsers(firstLoad)
-        this.getNumberOfPages(firstLoad);
-    }
-
-
-    componentDidMount() {
-
-        this._isMounted = true;
-        this.getRoles(true);
-        this.refreshList(true);
-    }
-
-    componentWillUnmount() {
-
-        this._isMounted = false;
-    }
-
-
-    delete_RestoreUser(user) {
-
-        if(window.confirm("Are You sure, You want to " + (user.IsDeleted ? "restore" : "delete") + " this user?")) {
-            fetch(this.deletePath, {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    UserId: user.UserId,
-                    IsDeleted: user.IsDeleted
-                })
-            }, (error) => {
-                alert("Failed!\n" + error);
-            });
+        };
+        if(authorization()) {
+            getRoles(true);
+            refreshList(true);
         }
+        return 0;
     }
 
-    checkAuthorization() {
+    useEffect(() => {
+        (
+            async () => {
+                getPrimaryData();
+            }
+        )();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-        return !(this.props.logged_user === -1 || this.props.logged_user === 0);
-    }
+    useEffect(() => {
 
-    redirect() {
-
-        return(
-            <Redirect to="/"></Redirect>
-        );
-    }
+        refreshList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
 
 
-    renderShowUsersButton() {
-
-        let buttonName = this.showAll ? 'Show available users' : 'Show all users';
-        let clickPath = this.showAll ? this.availableUsersPath : this.allUsersPath;
-        
-        return(
-            <Button
-                variant='primary' 
-                onClick={()=> {
-                    this.fetchPath = clickPath;
-                    this.showAll = !this.showAll;
-                    this.refreshList();
-                }}
-            >
-                {buttonName}
-            </Button>
-        );
-    }
-
-    renderTableExtras() {
+    function renderTableExtras() {
 
         return(
             <Nav className="justify-content-center mt-5">
                 <Nav.Item className="px-2">
                     <PagePagination 
-                        appPath={this.appPath} 
-                        numberOfPages={this.state.numberOfPages} 
-                        currentPage={this.state.currentPage} />
-                </Nav.Item>
-                <Nav.Item className="px-2">
-                    {this.renderShowUsersButton()}
+                        appPath={appPath} 
+                        numberOfPages={numberOfPages} 
+                        currentPage={currentPage}
+                    />
                 </Nav.Item>
             </Nav>
         );
     }
 
-    renderContent() {
+    function renderContent() {
 
-        let loading = this.state.dataLoaded * 25;
+
+        let loading = (rolesLoaded + usersLoaded + pagesLoaded + 1) * 25;
         let visibleLoading = loading !== 100;
 
         return(
@@ -216,35 +172,39 @@ export class User extends Component {
                 <span style={{display: visibleLoading ? 'block' : 'none' }}>
                     <LoadingBar loading={loading} />
                 </span>
-                <span style={{display: visibleLoading ? 'none' : 'block' }}>
+                <span 
+                    style={{display: visibleLoading ? 'none' : 'block' }}
+                >
                     <UserTable 
-                        roleList={this.state.roleList} 
-                        userList={this.state.userList}
-                        logged_user={this.props.logged_user}
+                        roleList={roleList} 
+                        userList={userList}
+                        logged_user={props.logged_user}
                     />
-                    {this.renderTableExtras()}
+                    {renderTableExtras()}
                 </span>
             </div>
         );
     }
 
-    renderErrorView() {
+    function redirectToHome() {
 
         return(
-            <div>
-                Database failure! Come back later.
-            </div>
+            <Redirect to="/"></Redirect>
         );
     }
 
-    render() {
+    function main() {
 
-        if(!this.checkAuthorization())
-            return this.redirect();
-            
-        if(this.state.connected)
-            return this.renderContent();
+        console.log("location", location);
+        console.log(currentPage);
+        if(redirect)
+            return redirectToHome();
+        else if(connected)
+            return renderContent();
         else
             return <ErrorView />
     }
+
+    return main();
 }
+export default User;

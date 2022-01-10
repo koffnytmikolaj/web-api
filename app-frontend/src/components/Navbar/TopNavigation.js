@@ -1,39 +1,34 @@
-import React, { Component } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { Navbar, Nav, Button } from "react-bootstrap";
 
-export class TopNavigation extends Component {
+function TopNavigation(props) {
 
-    constructor(props) {
+    const logOutPath = process.env.REACT_APP_API + 'login/logout';
 
-        super(props);
-        this.state = {
-            connected: true
+    function logOut() {
+
+        (async () => {
+            await fetch(logOutPath, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            })
+            .then(result => {
+                if(result.ok) {
+                    window.location.reload();
+                }
+            });
         }
-    }
-
-    logOutPath = process.env.REACT_APP_API + 'login/logout';
-
-    async logOut() {
-
-        await fetch(this.logOutPath, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        })
-        .then(result => {
-            if(result.ok) {
-                window.location.reload();
-            }
-        });
+        )();
     }
 
 
-    renderAuthorizationButtons() {
+    function renderAuthorizationButtons() {
 
-        let authorized = this.props.logged_user;
+        let authorized = props.logged_user;
         if(authorized === 0 || authorized === -1)
             return (
                 <Nav className="justify-content-end" style={{ width: "100%" }}>
@@ -48,21 +43,24 @@ export class TopNavigation extends Component {
             else
         return (
             <Nav className="justify-content-end px-2" style={{ width: "100%" }}>
-                <Button variant="danger" onClick={()=> this.logOut()}>Log out</Button>
+                <Button variant="danger" onClick={logOut}>Log out</Button>
             </Nav>
         );
     }
 
-    render() {
+    function main() {
 
         return(
             <Navbar variant="dark" bg="dark" expand="lg">
                 <Navbar.Brand href="/" className="px-2">My App</Navbar.Brand>
                 <Navbar.Toggle />
                 <Navbar.Collapse>
-                    {this.renderAuthorizationButtons()}
+                    {renderAuthorizationButtons()}
                 </Navbar.Collapse>
             </Navbar>
         );
     }
+
+    return main();
 }
+export default TopNavigation;

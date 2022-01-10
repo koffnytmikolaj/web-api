@@ -1,61 +1,99 @@
-import React, {Component} from "react";
-import { Button, Row, Col, Form, FloatingLabel, Container } from "react-bootstrap";
+import React, {useRef, useState} from "react";
+import { Button, Row, Col, Form, FloatingLabel, Container, Overlay } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
 
-export class Login extends Component {
+function Login(props) {
 
-    constructor(props) {
+    const [errorMessage, setErrorMessage] = useState("");
 
-        super(props);
-        this.handleSubmit = this.handleSubmit.bind(this);
-        this.state = {
-            errorMessage: ""
-        }
-    }
+    const [showOverlay, setShowOverlay] = useState(false);
+    const target = useRef(null);
 
-    fetchPath = process.env.REACT_APP_API + 'login';
+    const fetchPath = process.env.REACT_APP_API + 'login';
 
-    findErrors(result) {
+    function findErrors(result) {
 
         if(result)
             window.location.reload();
-        else
-            this.setState({errorMessage: result});
+        else {
+            setErrorMessage("Wrong password or login!");
+            setShowOverlay(true);
+        }
+            
     }
     
-    async tryLogIn(user) {
-
-        await fetch(this.fetchPath, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: "include",
-            body: JSON.stringify({
-                Login:         user.login.value,
-                Password:      user.password.value,
-            })
-        }, (error) => {
-            if(error)
-                alert("Failed!\n" + error);
-        }).then(res => res.json()).then(result => {
-            this.findErrors(result);
-        });
+    function tryLogIn(user) {
+        (
+            async () => {
+                await fetch(fetchPath, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        Login:         user.login.value,
+                        Password:      user.password.value,
+                    })
+                }, (error) => {
+                    if(error)
+                        alert("Failed!\n" + error);
+                }).then(res => res.json()).then(result => {
+                    findErrors(result);
+                });
+            }
+        )();
     }
     
-    handleSubmit(event) {
+    function handleSubmit(event) {
         
         event.preventDefault();
-        this.tryLogIn(event.target);
+        tryLogIn(event.target);
     }
 
 
-    renderForm() {
+    function renderOverlay() {
+
+        return (
+            <Overlay target={target.current} show={showOverlay} placement="right">
+                {({ placement, arrowProps, show: _show, popper, ...props }) => (
+                <div
+                    {...props}
+                    style={{
+                    backgroundColor: 'rgba(255, 100, 100, 0.85)',
+                    padding: '2px 10px',
+                    color: 'white',
+                    borderRadius: 3,
+                    ...props.style,
+                    }}
+                >
+                    {errorMessage}
+                </div>
+                )}
+            </Overlay>
+        );
+    }
+
+    function renderSubmitButton() {
+
+        return (
+                <Button 
+                    variant="primary" 
+                    className="btn btn-lg btn-primary btn-block" 
+                    type="submit"
+                    ref={target}
+                >
+                    Sign in
+                </Button>
+        );
+    }
+
+    function renderForm() {
 
         return(
             
-            <Form onSubmit={this.handleSubmit}>
+            <Form onSubmit={handleSubmit}>
                 <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>
                 <Form.Group controlId="login">
                     <FloatingLabel label="Login" className="sr-only">
@@ -69,18 +107,17 @@ export class Login extends Component {
                 </Form.Group>
                 <div className="mt-3"></div>
                 <Form.Group>
-                    <Button variant="primary" className="btn btn-lg btn-primary btn-block" type="submit">
-                        Sign in
-                    </Button>
+                    {renderSubmitButton()}
+                    {renderOverlay()}
                 </Form.Group>
-                <p className="mt-5 mb-3 text-muted">© 2021-2022 {this.state.message}</p>
+                <p className="mt-5 mb-3 text-muted">© 2021-2022</p>
             </Form>
         );
     }
 
-    render() {
+    function main() {
 
-        if(this.props.logged_user !== 0)
+        if(props.logged_user !== 0)
             return(
                 <Redirect to="/"></Redirect>
             );
@@ -89,10 +126,13 @@ export class Login extends Component {
                 <Container className="text-center mt-5">
                     <Row>
                         <Col md={{ span: 4, offset: 4 }}>
-                            {this.renderForm()}
+                            {renderForm()}
                         </Col>
                     </Row>
                 </Container>
             );
     }
+
+    return main();
 }
+export default Login;

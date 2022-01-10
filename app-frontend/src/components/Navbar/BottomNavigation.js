@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { Navbar, Nav, Button } from "react-bootstrap";
 
-export class BottomNavigation extends Component {
+function BottomNavigation() {
 
-    render() {
+    function main() {
 
         return(
 
@@ -26,4 +26,7 @@ export class BottomNavigation extends Component {
             </Navbar>
         );
     }
+
+    return main();
 }
+export default BottomNavigation;

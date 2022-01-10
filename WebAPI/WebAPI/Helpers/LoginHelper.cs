@@ -13,7 +13,7 @@ namespace WebAPI.Helpers
             if (!BCrypt.Net.BCrypt.Verify(user.Password, currentUser.Password))
                 throw new InvalidOperationException();
             if(!newUser) {
-                if (!currentUser.IsDeleted)
+                if (currentUser.IsDeleted)
                     throw new Exception();
             }
             

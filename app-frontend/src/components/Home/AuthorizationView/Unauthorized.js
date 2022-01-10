@@ -1,12 +1,12 @@
-import React, {Component} from "react";
+import React from "react";
 import { Card, Button, Carousel } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import 'animate.css';
 import "holderjs";
 
-export class Unauthorized extends Component {
+function Unauthorized() {
     
-    renderCards() {
+    function renderCards() {
 
         return (
             <div className="m-5 d-flex justify-content-center">
@@ -36,7 +36,7 @@ export class Unauthorized extends Component {
         );
     }
 
-    renderCarousel() {
+    function renderCarousel() {
 
         return (
             <Carousel className="d-flex justify-content-center">
@@ -79,13 +79,16 @@ export class Unauthorized extends Component {
         );
     }
 
-    render() {
+    function main() {
 
         return(
             <div>
-                {this.renderCards()}
-                {this.renderCarousel()}
+                {renderCards()}
+                {renderCarousel()}
             </div>
         );
     }
+
+    return main();
 }
+export default Unauthorized;

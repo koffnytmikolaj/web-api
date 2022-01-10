@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Pagination } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 export class PagePagination extends Component {
 
@@ -9,60 +9,109 @@ export class PagePagination extends Component {
         let numberOfPages = this.props.numberOfPages;
         let currentPage = this.props.currentPage;
 
-        let leftArrows = Number(currentPage) === 1;
-        let firstPage = leftArrows ? "none" : "block";
+        let leftArrows = Number(currentPage) === 1 ? "disabled" : "";
+        let firstPage = leftArrows === "disabled" ? "none" : "block";
         let leftEllipsis = Number(currentPage) >= 5 ? "block" : "none" ;
         let prePrePage = Number(currentPage) >= 4 ? "block" : "none" ;
         let prePage = Number(currentPage) >= 3 ? "block" : "none" ;
         let nextPage = Number(currentPage) + 2 <= Number(numberOfPages) ? "block" : "none" ;
         let nextNextPage = Number(currentPage) + 3 <= Number(numberOfPages) ? "block" : "none" ;
         let rightEllipsis = Number(currentPage) + 4 <= Number(numberOfPages) ? "block" : "none" ;
-        let rightArrows = Number(numberOfPages) <= Number(currentPage);
-        let lastPage = rightArrows ? "none" : "block";
+        let rightArrows = Number(numberOfPages) <= Number(currentPage) ? "disabled" : "";
+        let lastPage = rightArrows === "disabled" ? "none" : "block";
 
         return(
-            <Pagination>
-                <Pagination.First href={appPath + 1} disabled={leftArrows} />
+            <ul className="pagination">
+                <li className={"page-item " + leftArrows}>
+                    <Link className="page-link" to={appPath} role="button" tabIndex="0">
+                        «
+                    </Link>
+                </li>
+                <li className={"page-item " + leftArrows}>
+                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
+                        ‹
+                    </Link>
+                </li>
+                <li className="page-item" style={{display: firstPage}}>
+                    <Link className="page-link" to={appPath + "?page=" + 1} role="button" tabIndex="0">
+                        1
+                    </Link>
+                </li>
+                <li className="page-item disabled">
+                    <span className="page-link" disabled style={{display: leftEllipsis}} >
+                        <span aria-hidden="true">
+                            …
+                        </span>
+                        <span className="visually-hidden">
+                            More
+                        </span>
+                    </span>
+                </li>
+                <li className="page-item" style={{display: prePrePage}}>
+                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 2)} role="button" tabIndex="0">
+                        {(Number(currentPage) - 2)}
+                    </Link>
+                </li>
+                <li className="page-item" style={{display: prePage}}>
+                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
+                        {(Number(currentPage) - 1)}
+                    </Link>
+                </li>
+                <li className="page-item active">
+                    <span className="page-link">
+                        {currentPage}
+                        <span className="visually-hidden">
+                            (current)
+                        </span>
+                    </span>
+                </li>
+                <li className="page-item" style={{display: nextPage}}>
+                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
+                        {(Number(currentPage) + 1)}
+                    </Link>
+                </li>
+                <li className="page-item" style={{display: nextNextPage}}>
+                <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 2)} role="button" tabIndex="0">
+                        {(Number(currentPage) + 2)}
+                    </Link>
+                </li>
+                <li className="page-item disabled" style={{display: "block"}}>
+                    <span className="page-link" style={{display: rightEllipsis}}>
+                        <span aria-hidden="true">
+                            …
+                        </span>
+                        <span className="visually-hidden">
+                            More
+                        </span>
+                </span>
+                </li>
+                <li className="page-item" style={{display: lastPage}}>
+                    <Link className="page-link" to={appPath + "?page=" + numberOfPages} role="button" tabIndex="0">
+                        {numberOfPages}
+                    </Link>
+                </li>
 
-                <Pagination.Prev href={appPath + (Number(currentPage) - 1)} disabled={leftArrows} />
-
-                <Pagination.Item href={appPath + 1} style={{display: firstPage}} >
-                    1
-                </Pagination.Item>
-
-                <Pagination.Ellipsis disabled style={{display: leftEllipsis}} />
-
-                <Pagination.Item href={appPath + (Number(currentPage) - 2)} style={{display: prePrePage}}>
-                    {Number(currentPage) - 2}
-                </Pagination.Item>
-
-                <Pagination.Item href={appPath + (Number(currentPage) - 1)} style={{display: prePage}}>
-                    {Number(currentPage) - 1}
-                </Pagination.Item>
-
-                <Pagination.Item active>
-                    {currentPage}
-                </Pagination.Item>
-
-                <Pagination.Item href={appPath + (Number(currentPage) + 1)} style={{display: nextPage}}>
-                    {Number(currentPage) + 1}
-                </Pagination.Item>
-
-                <Pagination.Item href={appPath + (Number(currentPage) + 2)} style={{display: nextNextPage}}>
-                    {Number(currentPage) + 2}
-                </Pagination.Item>
-
-                <Pagination.Ellipsis disabled style={{display: rightEllipsis}} />
-
-                <Pagination.Item href={appPath + numberOfPages} style={{display: lastPage}}>
-                    {numberOfPages}
-                </Pagination.Item>
-
-                <Pagination.Next href={appPath + (Number(currentPage) + 1)} disabled={rightArrows} />
-
-                <Pagination.Last href={appPath + numberOfPages} disabled={rightArrows} />
-            </Pagination>
-
+                <li className={"page-item " + rightArrows}>
+                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
+                        <span aria-hidden="true">
+                            ›
+                        </span>
+                        <span className="visually-hidden">
+                            Next
+                        </span>
+                    </Link>
+                </li>
+                <li className={"page-item " + rightArrows}>
+                    <Link className="page-link" to={appPath + "?page=" + numberOfPages} role="button" tabIndex="0">
+                        <span aria-hidden="true">
+                            »
+                        </span>
+                        <span className="visually-hidden">
+                            Last
+                        </span>
+                    </Link>
+                </li>
+            </ul>
         );
     }
 }
