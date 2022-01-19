@@ -27,7 +27,8 @@ namespace DataAccessLibrary.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("DateOfAdd")
                         .HasColumnType("datetime2");
@@ -39,18 +40,23 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Localization")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Nip")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(13)
+                        .HasColumnType("char(13)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("CompanyId");
+
+                    b.HasIndex("DateOfAdd");
 
                     b.HasIndex("IndustryId");
 
@@ -70,22 +76,27 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("JobTitle")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(9)
+                        .HasColumnType("char(9)");
 
                     b.Property<string>("Surname")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -94,9 +105,11 @@ namespace DataAccessLibrary.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("Surname");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("ContactPersons");
+                    b.ToTable("ContactPeople");
                 });
 
             modelBuilder.Entity("DataAccessLibrary.Models.Industry", b =>
@@ -107,7 +120,8 @@ namespace DataAccessLibrary.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("IndustryName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("IndustryId");
 
@@ -122,7 +136,8 @@ namespace DataAccessLibrary.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("RoleName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("RoleId");
 
@@ -143,7 +158,8 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("NoteContent")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -171,21 +187,27 @@ namespace DataAccessLibrary.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Login")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Surname")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("Login");
 
                     b.HasIndex("RoleId");
 
@@ -252,17 +274,12 @@ namespace DataAccessLibrary.Migrations
             modelBuilder.Entity("DataAccessLibrary.Models.User.User", b =>
                 {
                     b.HasOne("DataAccessLibrary.Models.Role", "Role")
-                        .WithMany("Users")
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("DataAccessLibrary.Models.Role", b =>
-                {
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

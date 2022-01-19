@@ -8,8 +8,11 @@ import BottomNavigation from './Navbar/BottomNavigation';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ErrorView } from './AdditionalElements/ErrorView';
-import  Spinner  from './AdditionalElements/LoadingSchemas/Spinner/Spinner';
-import { Industry } from './Industries/Industry';
+import Spinner  from './AdditionalElements/LoadingSchemas/Spinner/Spinner';
+import Industry from './Industries/Industry';
+import Company from './Companies/Company';
+import TradeNotes from './TradeNotes/TradeNotes';
+import ContactPeople from './ContactPeople/ContactPeople';
 
 
 function Content() {
@@ -77,7 +80,16 @@ function Content() {
                 <Route path='/register'>
                     <Register logged_user={userAuthorized} />
                 </Route>
-                <Route path='/industries'>
+                <Route path='/company'>
+                    <Company logged_user={userAuthorized} />
+                </Route>
+                <Route path='/trade_notes'>
+                    <TradeNotes logged_user={userAuthorized} />
+                </Route>
+                <Route path='/contact_people'>
+                    <ContactPeople logged_user={userAuthorized} />
+                </Route>
+                <Route path='/industry'>
                     <Industry logged_user={userAuthorized} />
                 </Route>
             </Switch>

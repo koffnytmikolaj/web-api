@@ -5,6 +5,8 @@ import { ErrorView } from "../AdditionalElements/ErrorView";
 import { LoadingBar } from "../AdditionalElements/LoadingBar";
 import { PagePagination } from "../Pagination/PagePagination";
 import UserTable from "./Table/UserTable";
+import OrderSelect from "../AdditionalElements/OrderSelect";
+import SearchBar from '../AdditionalElements/SearchBar/SearchBar';
 
 function User(props) {
 
@@ -14,23 +16,37 @@ function User(props) {
     const [roleList, setRoleList] = useState([]);
     const [numberOfPages, setNumberOfPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(new URLSearchParams(location.search).get("page"));
+    const [orderBy, setOrderBy] = useState("");
+    const [descending, setDescending] = useState("false");
+    const [search, setSearch] = useState("");
     const [connected, setConnected] = useState(true);
     const [redirect, setRedirect] = useState(false);
+    const [currentOrder, setCurrentOrder] = useState("");
 
     const [rolesLoaded, setRolesLoaded] = useState(false);
     const [usersLoaded, setUsersLoaded] = useState(false);
     const [pagesLoaded, setPagesLoaded] = useState(false);
 
+    const orderElements = [
+        ["Default", "Default"],
+        ["Name", "Name"],
+        ["Surname", "Surname"],
+        ["DateOfBirth", "Date of birth"],
+        ["Login", "Login"],
+        ["RoleName", "Role"]
+    ];
+
     const appPath = '/user/';
+    const [appPathExt, setAppPathExt] = useState(appPath); 
     const rolePath = process.env.REACT_APP_API + 'role/GetRoles';
     const numberOfPagesPath = process.env.REACT_APP_API + 'user/GetNumberOfPages';
-    const fetchPath = process.env.REACT_APP_API + 'user/GetAvailableUsers';
+    const userPath = process.env.REACT_APP_API + 'user/GetAvailableUsers';
     
 
     function getRoles(firstLoad = false) {
         (
             async () => {
-                await fetch(rolePath).then(response => 
+                await fetch(rolePath, {credentials: "include"}).then(response => 
                     response.json(),
                         (error) => {
                             if(error)
@@ -51,19 +67,38 @@ function User(props) {
 
     function getGetUsersPath() {
 
-        let curPage = new URLSearchParams(location.search).get("page");
+        let params = new URLSearchParams(location.search);
+
+        let search = params.get("search");
+        if(search == null)
+            search = "";
+        setSearch(search);
+
+        let desc = params.get("desc");
+        if(desc == null || (desc !== "true" && desc !== "false"))
+            desc = "false";
+        setDescending(desc);
+
+        let order = params.get("order");
+        if(order == null)
+            order = "default";
+        setOrderBy(order);
+
+        let curPage = params.get("page");
         if(curPage == null || curPage < 1)
             curPage = 1;
         setCurrentPage(curPage);
-        return "?page=" + curPage;
+
+        let pageString = "?search=" + search + "&order=" + order + "&desc=" + desc + "&page=" + curPage;
+        return pageString;
     }
 
     function getUsers(firstLoad) {
 
-        let getUsersPath = fetchPath + "/" + getGetUsersPath();
+        let fetchPath = userPath + "/" + getGetUsersPath();
         (
             async () => {
-                await fetch(getUsersPath).then(response => 
+                await fetch(fetchPath, {credentials: "include"}).then(response => 
                     response.json(),
                         (error) => {
                             if(error)
@@ -84,7 +119,7 @@ function User(props) {
     function getNumberOfPages(firstLoad) {
         (
             async () => {
-                await fetch(numberOfPagesPath).then(response => 
+                await fetch(numberOfPagesPath, {credentials: "include"}).then(response => 
                     response.json(),
                         (error) => {
                             if(error)
@@ -98,7 +133,6 @@ function User(props) {
                     if(firstLoad) {
                         setPagesLoaded(true);
                     }
-                        
                 });
             }
         )();
@@ -108,6 +142,21 @@ function User(props) {
 
         getUsers(firstLoad)
         getNumberOfPages(firstLoad);
+    }
+
+    function getCurrentOrder() {
+
+        let orderIndex;
+        for(let i = 0; i < orderElements.length; i++) {
+            if(orderElements[i][0] === orderBy) {
+                orderIndex = i;
+                break;
+            }
+            if(i === orderElements.length - 1)
+                orderIndex = 0;
+        }
+        let descIndex = descending === "false" ? 0 : 1;
+        setCurrentOrder(orderElements[orderIndex][0] + descIndex);
     }
 
     function getPrimaryData() {
@@ -145,19 +194,38 @@ function User(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.search]);
 
+    useEffect(() => {
+
+        setAppPathExt(appPath + "?order=" + orderBy + "&desc=" + descending);
+        getCurrentOrder();
+        refreshList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderBy, descending]);
+
 
     function renderTableExtras() {
 
-        return(
-            <Nav className="justify-content-center mt-5">
-                <Nav.Item className="px-2">
-                    <PagePagination 
-                        appPath={appPath} 
-                        numberOfPages={numberOfPages} 
-                        currentPage={currentPage}
-                    />
-                </Nav.Item>
-            </Nav>
+        if(search === "")
+            return(
+                <Nav className="justify-content-center mt-5">
+                    <Nav.Item className="px-2">
+                        <PagePagination 
+                            appPath={appPathExt} 
+                            numberOfPages={numberOfPages} 
+                            currentPage={currentPage}
+                        />
+                    </Nav.Item>
+                </Nav>
+            );
+    }
+
+    function renderOrderSelect() {
+
+        return (
+            <div className="d-flex flex-row-reverse">
+                <SearchBar placeholder={"Search user"} path={appPath} />
+                <OrderSelect order_list={orderElements} path={appPath} curOrder={currentOrder} />
+            </div>
         );
     }
 
@@ -175,6 +243,7 @@ function User(props) {
                 <span 
                     style={{display: visibleLoading ? 'none' : 'block' }}
                 >
+                    {renderOrderSelect()}
                     <UserTable 
                         roleList={roleList} 
                         userList={userList}
@@ -194,9 +263,7 @@ function User(props) {
     }
 
     function main() {
-
-        console.log("location", location);
-        console.log(currentPage);
+        
         if(redirect)
             return redirectToHome();
         else if(connected)

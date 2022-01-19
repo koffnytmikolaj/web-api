@@ -11,9 +11,7 @@ namespace DataAccessLibrary.Models
         [Key]
         public int RoleId { get; set; }
 
+        [MaxLength(64)]
         public string RoleName { get; set; }
-
-
-        public ICollection<User.User> Users { get; set; }
     }
 }

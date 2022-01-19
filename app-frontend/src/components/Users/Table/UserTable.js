@@ -151,7 +151,7 @@ function UserTable(props){
         let loggedUserRole = props.logged_user.RoleId;
 
         return(
-            <Table className="mt-4" striped bordered hover size="sm">
+            <Table className="mt-4" striped bordered hover size="sm" responsive>
                 {renderTableHead(loggedUserRole)}
                 {renderTableBody(loggedUserRole)}
             </Table>

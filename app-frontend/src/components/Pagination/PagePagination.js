@@ -28,12 +28,12 @@ export class PagePagination extends Component {
                     </Link>
                 </li>
                 <li className={"page-item " + leftArrows}>
-                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
                         ‹
                     </Link>
                 </li>
                 <li className="page-item" style={{display: firstPage}}>
-                    <Link className="page-link" to={appPath + "?page=" + 1} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + 1} role="button" tabIndex="0">
                         1
                     </Link>
                 </li>
@@ -48,12 +48,12 @@ export class PagePagination extends Component {
                     </span>
                 </li>
                 <li className="page-item" style={{display: prePrePage}}>
-                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 2)} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) - 2)} role="button" tabIndex="0">
                         {(Number(currentPage) - 2)}
                     </Link>
                 </li>
                 <li className="page-item" style={{display: prePage}}>
-                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) - 1)} role="button" tabIndex="0">
                         {(Number(currentPage) - 1)}
                     </Link>
                 </li>
@@ -66,12 +66,12 @@ export class PagePagination extends Component {
                     </span>
                 </li>
                 <li className="page-item" style={{display: nextPage}}>
-                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
                         {(Number(currentPage) + 1)}
                     </Link>
                 </li>
                 <li className="page-item" style={{display: nextNextPage}}>
-                <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 2)} role="button" tabIndex="0">
+                <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) + 2)} role="button" tabIndex="0">
                         {(Number(currentPage) + 2)}
                     </Link>
                 </li>
@@ -86,13 +86,13 @@ export class PagePagination extends Component {
                 </span>
                 </li>
                 <li className="page-item" style={{display: lastPage}}>
-                    <Link className="page-link" to={appPath + "?page=" + numberOfPages} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + numberOfPages} role="button" tabIndex="0">
                         {numberOfPages}
                     </Link>
                 </li>
 
                 <li className={"page-item " + rightArrows}>
-                    <Link className="page-link" to={appPath + "?page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + (Number(currentPage) + 1)} role="button" tabIndex="0">
                         <span aria-hidden="true">
                             ›
                         </span>
@@ -102,7 +102,7 @@ export class PagePagination extends Component {
                     </Link>
                 </li>
                 <li className={"page-item " + rightArrows}>
-                    <Link className="page-link" to={appPath + "?page=" + numberOfPages} role="button" tabIndex="0">
+                    <Link className="page-link" to={appPath + "&page=" + numberOfPages} role="button" tabIndex="0">
                         <span aria-hidden="true">
                             »
                         </span>

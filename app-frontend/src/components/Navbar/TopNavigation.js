@@ -52,7 +52,7 @@ function TopNavigation(props) {
 
         return(
             <Navbar variant="dark" bg="dark" expand="lg">
-                <Navbar.Brand href="/" className="px-2">My App</Navbar.Brand>
+                <Navbar.Brand to="/" className="px-2">My App</Navbar.Brand>
                 <Navbar.Toggle />
                 <Navbar.Collapse>
                     {renderAuthorizationButtons()}

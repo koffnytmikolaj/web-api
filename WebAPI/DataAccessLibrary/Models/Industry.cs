@@ -11,6 +11,7 @@ namespace DataAccessLibrary.Models
         [Key]
         public int IndustryId { get; set; }
 
+        [MaxLength(64)]
         public string IndustryName { get; set; }
     }
 }

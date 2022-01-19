@@ -1,0 +1,51 @@
+.searchInputs {
+    display: flex;
+  }
+  
+  .search input {
+    background-color: white;
+    
+  }
+  
+  .searchIcon {
+    background-color: white;
+    display: grid;
+    place-items: center;
+  }
+  
+  input:focus {
+    outline: none;
+  }
+  
+  .dataResult {
+    margin-top: 5px;
+    width: 300px;
+    height: 200px;
+    background-color: white;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    overflow: hidden;
+    overflow-y: auto;
+  }
+  
+  .dataResult::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .dataResult .dataItem {
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    color: black;
+  }
+  
+  .dataItem p {
+    margin-left: 10px;
+  }
+  a {
+    text-decoration: none;
+  }
+  
+  #clearBtn {
+    cursor: pointer;
+  }

@@ -39,8 +39,9 @@ namespace WebAPI.Helpers
         {
             foreach(char mark in str.Skip(1))
             {
-                if (char.IsUpper(mark))
-                    return false;
+                if (char.IsLower(mark))
+                    continue;
+                return false;
             }
             return true;
         }

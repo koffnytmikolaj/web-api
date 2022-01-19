@@ -11,6 +11,7 @@ using DataAccessLibrary.DataAccess;
 using System.Linq;
 using System;
 using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
 {
@@ -20,7 +21,6 @@ namespace WebAPI.Controllers
     {
         private readonly AppDbContext _context;
         private readonly JwtService _jwtService;
-        private readonly int usersPerPage = 6;
 
         public UserController(AppDbContext context, JwtService jwtService)
         {
@@ -29,58 +29,93 @@ namespace WebAPI.Controllers
         }
 
 
+        
+        [Route("tr")]
+        [HttpPut]
+        public JsonResult Tr(User user)
+        {
+            User testUser = _context.Users.Where(u => u.UserId == user.UserId).First();
+            Role role = _context.Roles.Where(r => r.RoleId == testUser.RoleId).First();
+            testUser.Role = role;
+            _context.SaveChanges();
+            return new JsonResult(_context.Users.ToList());
+        }
+
+
         [Route("GetAllUsers")]
         [HttpGet]
-        public JsonResult GetAllUsers(int page = 1)
+        public JsonResult GetAllUsers()
         {
-            ICollection<Role> roles = _context.Roles.ToList();
-            var users = _context.Users.ToList().Join(
-                roles,
-                u => u.RoleId,
-                r => r.RoleId,
-                (user, role) => new 
-                {
-                    user.UserId, 
-                    user.Name, 
-                    user.Surname, 
-                    DateOfBirth = DateHelper.TransformDateToString(user.DateOfBirth), 
-                    user.Login,
-                    user.RoleId, 
-                    role.RoleName, 
-                    user.IsDeleted
-                }
-            )
-                .Skip((page - 1) * usersPerPage)
-                .Take(usersPerPage);
-
+            ICollection<User> users = _context.Users.ToList();
             return new JsonResult(users);
         }
 
         [Route("GetAvailableUsers")]
         [HttpGet]
-        public JsonResult GetOnlyAvailableUsers(int page = 1)
+        public JsonResult GetAvailableUsers(int page = 1, string order = "", bool desc = false, string search = "")
         {
-
+            //Get all available users
             ICollection<Role> roles = _context.Roles.ToList();
-            var users = _context.Users.ToList().Join(
-                roles,
-                u => u.RoleId,
-                r => r.RoleId,
-                (user, role) => new 
+            var users = _context.Users
+                .ToList().Join(
+                    roles,
+                    u => u.RoleId,
+                    r => r.RoleId,
+                    (user, role) => new
+                    {
+                        user.UserId,
+                        user.Name,
+                        user.Surname,
+                        DateOfBirth = DateHelper.TransformDateToString(user.DateOfBirth),
+                        user.Login,
+                        user.RoleId,
+                        role.RoleName,
+                        user.IsDeleted
+                    }
+                )
+                .Where(user => user.IsDeleted == false);
+
+            //Include order by and descending
+            Type typeOfData = users.GetType().GetGenericArguments().Last();
+            var orderProperty = typeOfData.GetProperty(order);
+            if (orderProperty != null)
+            {
+                try
                 {
-                    user.UserId, 
-                    user.Name, 
-                    user.Surname, 
-                    DateOfBirth = DateHelper.TransformDateToString(user.DateOfBirth), 
-                    user.Login,
-                    user.RoleId, 
-                    role.RoleName, 
-                    user.IsDeleted
+                    if (desc)
+                        users = users.OrderByDescending(u => orderProperty.GetValue(u, null));
+                    else
+                        users = users.OrderBy(u => orderProperty.GetValue(u, null));
                 }
-            )
-                .Where(user => user.IsDeleted == false)
-                .Skip((page - 1) * usersPerPage)
-                .Take(usersPerPage);
+                catch (Exception) { }
+            }
+            else
+            {
+                if (desc)
+                    users = users.OrderByDescending(u => u.UserId);
+                else
+                    users = users.OrderBy(u => u.UserId);
+            }
+
+            //Include search
+            if(!string.IsNullOrEmpty(search))
+            {
+                users = users.Where(u =>
+                
+                    u.Name.ToLower().Contains(search.ToLower())
+                    || u.Surname.ToLower().Contains(search.ToLower())
+                    || u.Login.ToLower().Contains(search.ToLower())
+                    || u.DateOfBirth.ToLower().Contains(search.ToLower())
+                    || u.RoleName.ToLower().Contains(search.ToLower())
+                );
+            } //Pagination
+            else
+            {
+                users = users
+                    .Skip((page - 1) * ShowItems.itemsPerPage)
+                    .Take(ShowItems.itemsPerPage);
+            }
+            
 
             return new JsonResult(users);
         }
@@ -89,15 +124,25 @@ namespace WebAPI.Controllers
         [HttpGet]
         public JsonResult GetNumberOfPages(bool all = false)
         {
-            int numberOfUsers = all 
-                ? _context.Users.Count() 
+            try
+            {
+                int role = LoginHelper.GetUserByCookie(Request.Cookies["jwt"], _jwtService, _context).RoleId;
+                if(role != 1 & role != 2 & role != 3)
+                    throw new Exception();
+                int numberOfUsers = all
+                ? _context.Users.Count()
                 : _context.Users.Where(u => u.IsDeleted == false).Count();
-            int additionalPage =
-                numberOfUsers % usersPerPage == 0
-                ? 0
-                : 1;
+                int additionalPage =
+                    numberOfUsers % ShowItems.itemsPerPage == 0
+                    ? 0
+                    : 1;
 
-            return new JsonResult(numberOfUsers / usersPerPage + additionalPage);
+                return new JsonResult(numberOfUsers / ShowItems.itemsPerPage + additionalPage);
+            }
+            catch(Exception e)
+            {
+                return new JsonResult(e);
+            }
         }
 
         [Route("ChangePassword")]
@@ -179,16 +224,25 @@ namespace WebAPI.Controllers
         [HttpPut]
         public JsonResult EditUser(User user)
         {
-            Dictionary<string, string> editionTable = UserVerificationHelper.VerifyUser(user);
-            if (!UserVerificationHelper.VerifyTable(editionTable))
-                return new JsonResult(editionTable);
-            
-            User editedUser = _context.Users.Where(u => u.UserId == user.UserId).First();
-            editedUser.Surname = user.Surname;
-            editedUser.DateOfBirth = user.DateOfBirth;
-            editedUser.Name = user.Name;
-            _context.SaveChanges();
-            return new JsonResult(1);
+            try
+            {
+                if (LoginHelper.GetUserByCookie(Request.Cookies["jwt"], _jwtService, _context).UserId != user.UserId)
+                    throw new Exception();
+                Dictionary<string, string> editionTable = UserVerificationHelper.VerifyUser(user);
+                if (!UserVerificationHelper.VerifyTable(editionTable))
+                    return new JsonResult(editionTable);
+
+                User editedUser = _context.Users.Where(u => u.UserId == user.UserId).First();
+                editedUser.Surname = user.Surname;
+                editedUser.DateOfBirth = user.DateOfBirth;
+                editedUser.Name = user.Name;
+                _context.SaveChanges();
+                return new JsonResult(true);
+            }
+            catch(Exception)
+            {
+                return new JsonResult(false);
+            }
         }
 
         [Route("ChangeRole")]

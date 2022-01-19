@@ -19,7 +19,7 @@ namespace DataAccessLibrary.DataAccess
         public DbSet<Industry> Industries { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<TradeNote> TradeNotes { get; set; }
-        public DbSet<ContactPerson> ContactPersons { get; set; }
+        public DbSet<ContactPerson> ContactPeople { get; set; }
 
     }
 }
